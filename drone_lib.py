@@ -270,18 +270,18 @@ def inner_controller(state, angles_ref, params):
         params (dict): Diccionario de parámetros con ganancias PD.
 
     Returns:
-        tuple: Comandos de aceleración angular (Nx, Ny, Nz).
+        tuple: Comandos de aceleración angular (dwx, dwy, dwz).
 
     Example:
-        >>> Nx, Ny, Nz = inner_controller(state, (phi_des, theta_des, psi_des), params)
+        >>> dwx, dwy, dwz = inner_controller(state, (phi_des, theta_des, psi_des), params)
     """
     phi, theta, psi = state[6], state[8], state[10]
     wx, wy, wz = state[7], state[9], state[11]
     phi_des, theta_des, psi_des = angles_ref
-    Nx =(params["kp_phi"]*(phi_des - phi) - params["kd_phi"]*wx)/params["gamma"]
-    Ny = (params["kp_theta"]*(theta_des - theta) - params["kd_theta"]*wy)/params["gamma"]
-    Nz = (params["kp_psi"]*(psi_des - psi) - params["kd_psi"]*wz)/params["epsilon"]
-    return Nx, Ny, Nz
+    dwx =(params["kp_phi"]*(phi_des - phi) - params["kd_phi"]*wx)
+    dwy = (params["kp_theta"]*(theta_des - theta) - params["kd_theta"]*wy)
+    dwz = (params["kp_psi"]*(psi_des - psi) - params["kd_psi"]*wz)
+    return dwx, dwy, dwz
 
 # ===============================
 # Simulación RK4
@@ -332,16 +332,16 @@ def simulate(T, dt, dynamics_func, trajectory_func, outer_controller, inner_cont
         theta_des = float(np.clip(theta_des, -params["max_angle"], params["max_angle"]))
         phi_des   = float(np.clip(phi_des, -params["max_angle"], params["max_angle"]))
         Tprime_cmd = float(np.clip(Tprime_cmd, params["Tprime_min"], params["Tprime_max"]))
-        Nx_cmd, Ny_cmd, Nz_cmd = inner_controller(state,(phi_des,theta_des,p_ref[3]),params)
-        Nx_cmd = float(np.clip(Nx_cmd, -params["max_ang_acc"], params["max_ang_acc"]))
-        Ny_cmd = float(np.clip(Ny_cmd, -params["max_ang_acc"], params["max_ang_acc"]))
-        Nz_cmd = float(np.clip(Nz_cmd, -params["max_ang_acc"], params["max_ang_acc"]))
-        u_hist[i,:] = [Tprime_cmd,Nx_cmd,Ny_cmd,Nz_cmd]
+        dwx_cmd, dwy_cmd, dwz_cmd = inner_controller(state,(phi_des,theta_des,p_ref[3]),params)
+        dwx_cmd = float(np.clip(dwx_cmd, -params["max_ang_acc"], params["max_ang_acc"]))
+        dwy_cmd = float(np.clip(dwy_cmd, -params["max_ang_acc"], params["max_ang_acc"]))
+        dwz_cmd = float(np.clip(dwz_cmd, -params["max_ang_acc"], params["max_ang_acc"]))
+        u_hist[i,:] = [Tprime_cmd,dwx_cmd/params['gamma'],dwy_cmd/params['gamma'],dwz_cmd/params['epsilon']]
         Tprime_hist[i] = Tprime_cmd
-        k1 = dynamics_func(state,Tprime_cmd,Nx_cmd,Ny_cmd,Nz_cmd, params["A"],params["B"],params["C"],params["D"],params["g"],params["gamma"],params["epsilon"])
-        k2 = dynamics_func(state+0.5*dt*k1,Tprime_cmd,Nx_cmd,Ny_cmd,Nz_cmd, params["A"],params["B"],params["C"],params["D"],params["g"],params["gamma"],params["epsilon"])
-        k3 = dynamics_func(state+0.5*dt*k2,Tprime_cmd,Nx_cmd,Ny_cmd,Nz_cmd, params["A"],params["B"],params["C"],params["D"],params["g"],params["gamma"],params["epsilon"])
-        k4 = dynamics_func(state+dt*k3,Tprime_cmd,Nx_cmd,Ny_cmd,Nz_cmd, params["A"],params["B"],params["C"],params["D"],params["g"],params["gamma"],params["epsilon"])
+        k1 = dynamics_func(state,Tprime_cmd,dwx_cmd,dwy_cmd,dwz_cmd, params["A"],params["B"],params["C"],params["D"],params["g"],params["gamma"],params["epsilon"])
+        k2 = dynamics_func(state+0.5*dt*k1,Tprime_cmd,dwx_cmd,dwy_cmd,dwz_cmd, params["A"],params["B"],params["C"],params["D"],params["g"],params["gamma"],params["epsilon"])
+        k3 = dynamics_func(state+0.5*dt*k2,Tprime_cmd,dwx_cmd,dwy_cmd,dwz_cmd, params["A"],params["B"],params["C"],params["D"],params["g"],params["gamma"],params["epsilon"])
+        k4 = dynamics_func(state+dt*k3,Tprime_cmd,dwx_cmd,dwy_cmd,dwz_cmd, params["A"],params["B"],params["C"],params["D"],params["g"],params["gamma"],params["epsilon"])
         state += (dt/6.0)*(k1+2*k2+2*k3+k4)
         state[7]*=0.999; state[9]*=0.999; state[11]*=0.999
         hist[i,:] = state
