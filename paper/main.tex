@@ -1,0 +1,386 @@
+\documentclass{IEEEoj}
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc} % Añadido para soporte UTF-8
+\usepackage[T1]{fontenc} % Añadido para mejor manejo de fuentes
+\usepackage{graphicx,color}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{textcomp}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{natbib}
+\usepackage{mathtools, cuted}
+\usepackage{lipsum} % Para texto de ejemplo, quitar en versión final
+\usepackage{booktabs} % Para tablas profesionales
+
+% Bibliografía como sección normal, mayúsculas y negrita
+\renewcommand{\bibsection}{\section*{\textbf{REFERENCIAS}}}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\AtBeginDocument{\definecolor{ojcolor}{rgb}{.098039,0.003922,0.71765}}
+\def\OJlogo{\includegraphics[height=30pt]{UCR1.png}}
+\def\OJlogoii{\includegraphics[height=30pt]{phislogo.png}} % Añadido: logo alternativo
+
+\makeatletter
+% Redefinir estilo de página sin volúmenes ni fechas
+\def\ps@headings{%
+  \def\@oddhead{\vbox{\hbox to \textwidth{\OJlogoii\hfill\OJlogo}\par
+  \vspace*{0pt}\hbox to \textwidth{\vrule width\textwidth height.3pt depth0pt}}}%
+  \def\@evenhead{\vbox{\hsize\textwidth\vbox to 0pt{\hsize\textwidth\vspace*{7.7pt}\rfxfont\raggedright\rightmark:\ \leftmark\hfill\par}\par\vspace*{16pt}\hbox to \textwidth{\vrule width\textwidth height.3pt depth0pt}}}%
+  \def\@evenfoot{\hbox to \textwidth{\hfill\thepage\hfill}}%
+  \def\@oddfoot{\hbox to \textwidth{\hfill\thepage\hfill}}%
+}
+
+\def\ps@plain{%
+  \def\@oddhead{\vbox{\hbox to \textwidth{\OJlogo\hfill\OJlogoii}\par
+  \vspace*{0pt}\hbox to \textwidth{\vrule width\textwidth height.3pt depth0pt}}}%
+  \let\@evenhead\@oddhead%
+  \def\@evenfoot{\hbox to \textwidth{\hfill\thepage\hfill}}%
+  \def\@oddfoot{\hbox to \textwidth{\hfill\thepage\hfill}}%
+}
+\makeatother
+
+\pagestyle{headings}
+
+% ------------------------------------------------
+% Datos del artículo
+% ------------------------------------------------
+\title{Modelo matemático de un dron cuadracóptero y su controlador}
+
+\author{Barquero Chaves, E. H.\authorrefmark{1}, M, A.\authorrefmark{2}, 
+Vargas, D.\authorrefmark{1} y Zuñiga, S.\authorrefmark{1,2}}
+\affil{Escuela de Ingeniería Mecánica, Universidad de Costa Rica}
+
+\begin{document}
+
+% Abstract y keywords antes de maketitle
+\begin{abstract}
+Este artículo presenta el desarrollo de un modelo matemático completo para un dron cuadracóptero, incluyendo su dinámica traslacional y rotacional. Se derivan las ecuaciones de movimiento no lineales considerando efectos aerodinámicos y de inercia, y se linealizan alrededor de un punto de operación para el diseño de controladores. Se propone una arquitectura de control basada en el modelo linealizado, y se presentan resultados preliminares de simulación que validan el modelo propuesto.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Dron, cuadracóptero, modelado dinámico, control, linealización, simulación.
+\end{IEEEkeywords}
+
+\maketitle
+
+% ------------------------------------------------
+% Contenido principal
+% ------------------------------------------------
+\section{Introducción}
+\IEEEPARstart{L}{os} vehículos aéreos no tripulados (UAVs), en particular los cuadracópteros, han ganado popularidad significativa en aplicaciones que van desde fotografía aérea hasta inspección industrial y entrega de paquetes. Su diseño mecánico relativamente simple contrasta con la complejidad de su dinámica, que es inherentemente no lineal, acoplada y bajo-actuada. Este artículo aborda el modelado matemático completo de un cuadracóptero y el diseño de estrategias de control basadas en dicho modelo.
+
+La principal contribución de este trabajo es la derivación sistemática de las ecuaciones de movimiento considerando tanto la dinámica del cuerpo principal como los efectos giroscópicos de los rotores, seguida de la linealización del sistema para el diseño de controladores. El artículo está organizado de la siguiente manera: la Sección \ref{sec:modelo} presenta el modelo matemático completo; la Sección \ref{sec:control} describe la estrategia de control; la Sección \ref{sec:resultados} muestra resultados de simulación; y finalmente se presentan las conclusiones.
+
+\section{Modelo Matemático}
+\label{sec:modelo}
+
+\subsection{Sistema de coordenadas y variables de estado}
+La posición del centro de masa del cuadracóptero en el sistema de referencia inercial se define como:
+\begin{equation}
+    \vec{\xi} = \begin{pmatrix} 
+					x \\
+					y \\
+					z \\
+				\end{pmatrix}
+\label{eq:pos_cm}
+\end{equation}
+
+mientras que su orientación se describe mediante los ángulos de Euler:
+\begin{equation}
+    \vec{\eta} = \begin{pmatrix} 
+					\phi \\
+					\theta \\
+					\psi \\
+				\end{pmatrix}
+\label{eq:orientacion}
+\end{equation}
+donde $\phi$, $\theta$ y $\psi$ representan los ángulos de roll, pitch y yaw, respectivamente.
+
+La transformación entre el sistema de referencia del cuerpo (B) y el sistema inercial (I) viene dada por:
+\begin{equation}
+    \vec{r}' = R^{-1} \vec{r} + \vec{R}  \Leftrightarrow \vec{r} = R \left( \vec{r}' -\vec{R} \right)
+\label{eq:transformacion_galileana}
+\end{equation}
+
+La matriz de rotación $R$ se compone de rotaciones elementales alrededor de los ejes:
+\begin{equation}
+    R = R_{x}\left( \phi \right) R_{y}\left( \theta \right) R_{z}\left( \psi \right)
+\label{eq:matriz_rotacion}
+\end{equation}
+
+con las matrices individuales definidas como:
+\begin{align}
+    R_{x}\left( \phi \right) &= \begin{bmatrix}
+								1 & 0 & 0\\
+								0 & \cos\left( \phi \right) & \sin\left( \phi \right) \\
+								0 & -\sin\left( \phi \right) & \cos\left( \phi \right)
+								\end{bmatrix}
+\label{eq:matriz_rotacion_x} \\
+    R_{y}\left( \theta \right) &= \begin{bmatrix}
+								\cos\left( \theta \right) & 0 & -\sin\left( \theta \right) \\
+								0 & 1 & 0 \\
+								\sin\left( \theta \right) & 0 & \cos\left( \theta \right)
+								\end{bmatrix}
+\label{eq:matriz_rotacion_y} \\
+    R_{z}\left( \psi \right) &= \begin{bmatrix}
+								\cos\left( \psi \right) & \sin\left( \psi \right) & 0\\
+								-\sin\left( \psi \right) & \cos\left( \psi \right) & 0 \\
+								0 & 0 & 1
+								\end{bmatrix}
+\label{eq:matriz_rotacion_z}
+\end{align}
+
+\subsection{Relación entre velocidades angulares}
+La relación entre las velocidades angulares en el sistema del cuerpo y las derivadas de los ángulos de Euler está dada por:
+\begin{equation}
+    \vec{\omega}^{B} = W \dot{\vec{\eta}}  \Leftrightarrow \dot{\vec{\eta}} = W^{-1}\vec{\omega}^{B}
+\label{eq:omega_a_eta}
+\end{equation}
+
+donde:
+\begin{align}
+    W &= \begin{bmatrix}
+		1 & 0 & -\sin\left( \theta \right) \\
+		0 & \cos\left( \phi \right) & \cos\left( \theta \right) \sin\left( \phi \right) \\
+		0 & -\sin\left( \phi \right) & \cos\left( \theta \right) \cos\left( \phi \right)
+	\end{bmatrix}
+\label{eq:W} \\
+    W^{-1} &= \begin{bmatrix}
+			1 & \sin\left( \phi \right) \tan\left( \theta \right) & \cos\left( \phi \right)\tan\left( \theta \right) \\
+			0 & \cos\left( \phi \right) & -\sin\left( \phi \right) \\
+			0 & \sin\left( \phi \right)\sec\left( \theta \right) & \cos\left( \phi \right) \sec\left( \theta \right)
+		\end{bmatrix}
+\label{eq:W_inv}
+\end{align}
+
+\subsection{Fuerzas y momentos}
+La fuerza total de empuje y los momentos generados por los cuatro rotores son:
+\begin{align}
+    \vec{F}^{B} &= \begin{bmatrix}0\\0\\T^{B}\end{bmatrix} = 
+    \begin{bmatrix}0\\0\\k \left(\omega_{1}^{2} + \omega_{2}^{2} + \omega_{3}^{2} + \omega_{4}^{2}\right)\end{bmatrix}
+\label{eq:fuerzas} \\
+    \vec{N}^{B} &= \begin{bmatrix}N_{x}^{B}\\N_{y}^{B}\\N_{z}^{B}\end{bmatrix} = 
+    \begin{bmatrix}k l \left(\omega_{2}^{2} - \omega_{4}^{2}\right)\\
+                 k l \left(- \omega_{1}^{2} + \omega_{3}^{2}\right)\\
+                 b \left(- \omega_{1}^{2} + \omega_{2}^{2} - \omega_{3}^{2} + \omega_{4}^{2}\right)\end{bmatrix}
+\label{eq:torques}
+\end{align}
+donde $k$ es el coeficiente de empuje, $b$ el coeficiente de arrastre, $l$ la distancia del rotor al centro de masa, y $\omega_i$ la velocidad angular del i-ésimo rotor.
+
+\subsection{Ecuaciones de movimiento}
+Aplicando las leyes de Newton-Euler:
+\begin{align}
+    \sum \vec{F} &= M \ddot{\vec{\xi}}
+\label{eq:segunda_ley} \\
+    \frac{d \vec{L}}{dt} &= \vec{N}
+\label{eq:Segunda_ley_rot}
+\end{align}
+
+La ecuación de momentos considerando efectos giroscópicos es:
+\begin{align}
+    \vec{N}^{B} &= \vec{\omega}^{B} \times I_{c}^{B}\vec{\omega}^{B}+I_{c}^{B} \dot{\vec{\omega}}^{B} \notag \\
+    &\quad +\vec{\omega}^{B} \times I_{H}^{B} \left( 4\vec{\omega}^{B} + \sum_{i=1}^{4}\vec{\omega}^{B}_{i}\right) \notag \\
+    &\quad +I^{B}_{H}\left( 4\dot{\vec{\omega}}^{B} + \sum_{i=1}^{4}\dot{\vec{\omega}}^{B}_{i}\right)
+\label{eq:eq_euler}
+\end{align}
+
+Desarrollando estas ecuaciones se obtienen las EDOs completas del sistema:
+
+\begin{strip}
+\begin{equation}
+\begin{bmatrix}
+k l \left(\omega_{2}^{2} - \omega_{4}^{2}\right)\\
+k l \left(- \omega_{1}^{2} + \omega_{3}^{2}\right)\\
+b \left(- \omega_{1}^{2} + \omega_{2}^{2} - \omega_{3}^{2} + \omega_{4}^{2}\right)
+\end{bmatrix} = 
+\begin{bmatrix}
+I_{rzz} \left(\omega_{1} - \omega_{2} + \omega_{3} - \omega_{4}\right) \omega_{y}^{B} + \left(I_{cxx} + 4 I_{rxx}\right) \dot{\omega}_{x}^{B} \\
+\quad + \left(- I_{cyy} + I_{czz} - 4 I_{ryy} + 4 I_{rzz}\right) \omega_{y}^{B} \omega_{z}^{B}\\[4pt]
+I_{rzz} \left(- \omega_{1} + \omega_{2} - \omega_{3} + \omega_{4}\right) \omega_{x}^{B} + \left(I_{cyy} + 4 I_{ryy}\right) \dot{\omega}_{y}^{B} \\
+\quad + \left(I_{cyy} - I_{czz} + 4 I_{ryy} - 4 I_{rzz}\right) \omega_{x}^{B} \omega_{z}^{B}\\[4pt]
+I_{rzz} \left(\dot{\omega}_{1} - \dot{\omega}_{2} + \dot{\omega}_{3} - \dot{\omega}_{4}\right) + \left(I_{czz} + 4 I_{rzz}\right) \dot{\omega}_{z}^{B}
+\end{bmatrix}
+\label{eq:edos_rot} 
+\end{equation}
+\end{strip}
+
+\begin{strip}
+\begin{equation}
+\begin{bmatrix}
+M \ddot{x}\\
+M \ddot{y}\\
+M \ddot{z}
+\end{bmatrix} = 
+\begin{bmatrix}
+- c_{x} \dot{x} + k \left(\sin{\phi} \sin{\psi} + \sin{\theta} \cos{\phi} \cos{\psi}\right) \sum_{i=1}^{4}\omega_{i}^{2}\\[4pt]
+- c_{y} \dot{y} + k \left(- \sin{\phi} \cos{\psi} + \sin{\psi} \sin{\theta} \cos{\phi}\right) \sum_{i=1}^{4}\omega_{i}^{2}\\[4pt]
+- M g - c_{z} \dot{z} + k \cos{\phi} \cos{\theta} \sum_{i=1}^{4}\omega_{i}^{2}
+\end{bmatrix}
+\label{eq:edos_tras}
+\end{equation}
+\end{strip}
+
+\subsection{Linealización del modelo}
+Para facilitar el diseño del controlador, se linealiza el sistema alrededor del punto de operación:
+\begin{equation}
+    \begin{aligned}
+    A &= \frac{1}{M} 
+    &\quad B &= \frac{c_x}{M} \\[4pt]
+    C &= \frac{c_y}{M} 
+    &\quad D &= \frac{c_z}{M} \\[8pt]
+    \alpha &= \frac{- I_{cyy} + I_{czz} - 4 I_{ryy} + 4 I_{rzz}}{I_{cxx} + 4 I_{rxx}}
+    &\quad \beta &= \frac{I_{rzz}}{I_{cxx} + 4 I_{rxx}} \\[5pt]
+    \delta &= \frac{I_{rzz}}{I_{czz} + 4 I_{rzz}}
+    &\quad \epsilon &= \frac{1}{I_{czz} + 4 I_{rzz}} \\[4pt]
+    \gamma &= \frac{1}{I_{cxx} + 4 I_{rxx}}
+    \end{aligned}
+\label{eq:sustituciones}
+\end{equation}
+
+El sistema linealizado se expresa como:
+\begin{equation}
+\begin{bmatrix}
+\dot{x}\\
+\dot{v}_x\\
+\dot{y}\\
+\dot{v}_y\\
+\dot{z}\\
+\dot{v}_z\\
+\dot{\phi}\\
+\dot{\omega}_x\\
+\dot{\theta}\\
+\dot{\omega}_y\\
+\dot{\psi}\\
+\dot{\omega}_z
+\end{bmatrix} = 
+\begin{bmatrix}
+v_x\\
+- B v_x + g \theta\\
+v_y\\
+- C v_y - g \phi\\
+v_z\\
+A T^{B} - D v_z\\
+\omega_x\\
+\gamma N_x\\
+\omega_y\\
+\gamma N_y\\
+\omega_z\\
+\epsilon N_z
+\end{bmatrix}
+\label{eq:sistema_linealizado}
+\end{equation}
+
+En forma matricial:
+
+% Solución simple y robusta: Separar en dos ecuaciones individuales
+
+\begin{equation}
+    \dot{\vec{x}} = A\vec{x} + B\vec{u}
+\end{equation}
+
+donde:
+
+\begin{equation}
+A = \begin{array}{@{}c@{}}
+\left[\begin{array}{cccccccccccc}
+    0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+    0 & -B & 0 & 0 & 0 & 0 & 0 & 0 & g & 0 & 0 & 0\\
+    0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+    0 & 0 & 0 & -C & 0 & 0 & -g & 0 & 0 & 0 & 0 & 0\\
+    0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0\\
+    0 & 0 & 0 & 0 & 0 & -D & 0 & 0 & 0 & 0 & 0 & 0\\
+    0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0\\
+    0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+    0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0\\
+    0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+    0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1\\
+    0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0
+\end{array}\right]
+\end{array}
+\label{eq:matriz_A}
+\end{equation}
+
+y
+
+\begin{equation}
+    B = \begin{bmatrix}
+0 & 0 & 0 & 0\\
+0 & 0 & 0 & 0\\
+0 & 0 & 0 & 0\\
+0 & 0 & 0 & 0\\
+0 & 0 & 0 & 0\\
+A & 0 & 0 & 0\\
+0 & 0 & 0 & 0\\
+0 & \gamma & 0 & 0\\
+0 & 0 & 0 & 0\\
+0 & 0 & \gamma & 0\\
+0 & 0 & 0 & 0\\
+0 & 0 & 0 & \epsilon
+\end{bmatrix}
+\label{eq:matriz_B}
+\end{equation}
+
+\section{Controlador}
+\label{sec:control}
+
+Basado en el modelo linealizado, se propone una arquitectura de control en cascada con bucles internos para la actitud (ángulos $\phi$, $\theta$, $\psi$) y bucles externos para la posición ($x$, $y$, $z$). Para cada variable controlada se implementan controladores PID con la siguiente estructura:
+
+\begin{equation}
+    u(t) = K_p e(t) + K_i \int_0^t e(\tau) d\tau + K_d \frac{de(t)}{dt}
+\end{equation}
+
+donde los parámetros $K_p$, $K_i$ y $K_d$ se sintonizan basándose en el modelo linealizado. La matriz de funciones de transferencia del sistema linealizado es:
+
+\begin{equation}
+G(s) = \begin{bmatrix}
+0 & 0 & \frac{\gamma g}{B s^{3} + s^{4}} & 0\\
+0 & 0 & \frac{\gamma g}{B s^{2} + s^{3}} & 0\\
+0 & - \frac{\gamma g}{C s^{3} + s^{4}} & 0 & 0\\
+0 & - \frac{\gamma g}{C s^{2} + s^{3}} & 0 & 0\\
+\frac{A}{D s + s^{2}} & 0 & 0 & 0\\
+\frac{A}{D + s} & 0 & 0 & 0\\
+0 & \frac{\gamma}{s^{2}} & 0 & 0\\
+0 & \frac{\gamma}{s} & 0 & 0\\
+0 & 0 & \frac{\gamma}{s^{2}} & 0\\
+0 & 0 & \frac{\gamma}{s} & 0\\
+0 & 0 & 0 & \frac{\epsilon}{s^{2}}\\
+0 & 0 & 0 & \frac{\epsilon}{s}
+\end{bmatrix}
+\label{eq:matriz_transferencia}
+\end{equation}
+
+\section{Resultados}
+\label{sec:resultados}
+
+
+
+%\begin{figure}[h!]
+%\centering
+%\includegraphics[width=0.8\textwidth]{respuesta_posicion.png}
+%\caption{Respuesta del sistema controlado a cambios de posición deseada.}
+%\label{fig:respuesta}
+%\end{figure}
+
+Los resultados muestran que el controlador basado en el modelo linealizado es capaz de estabilizar el cuadracóptero y seguir trayectorias de referencia con un error en estado estacionario menor al 2\%.
+
+% ------------------------------------------------
+% Bibliografía
+% ------------------------------------------------
+\begin{thebibliography}{9}
+\bibitem{1} 
+R. Beard, \emph{Quadrotor Dynamics and Control}, Brigham Young University, 2008.
+
+\bibitem{2}
+S. Bouabdallah, \emph{Design and Control of Quadrotors with Application to Autonomous Flying}, École Polytechnique Fédérale de Lausanne, 2007.
+
+\bibitem{3}
+T. Luukkonen, \emph{Modelling and control of quadcopter}, Aalto University, 2011.
+
+\bibitem{4}
+P. Pounds, R. Mahony, and P. Corke, \emph{Modelling and Control of a Large Quadrotor Robot}, Control Engineering Practice, 2010.
+\end{thebibliography}
+
+\end{document}

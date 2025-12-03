@@ -167,7 +167,7 @@ class Quadcopter:
 		self._update_axis_and_labels()
 
 	# -----------------
-	# Metodos de conveniencia: Euler (ZYX) y cuaterniones
+	# Metodos de conveniencia: Euler (ZYX), Tait-Bryan (YXZ) y cuaterniones
 	# -----------------
 	def set_euler(self, roll, pitch, yaw):
 		"""Roll, pitch, yaw (rad). Convención ZYX: R = Rz(yaw) * Ry(pitch) * Rx(roll)"""
@@ -181,6 +181,41 @@ class Quadcopter:
 
 		R = Rz @ Ry @ Rx
 		self.set_orientation_matrix(R)
+
+
+	def set_taitbryan_yxz(self, phi, theta, psi):
+		"""
+		Roll (phi), Pitch (theta), Yaw (psi) en radianes.
+		Convención Tait-Bryan Y-X-Z: R = Rx(phi) @ Ry(theta) @ Rz(psi)
+		Pasa de coordenadas inerciales a no inerciales.
+		"""
+		cphi, sphi   = np.cos(phi), np.sin(phi)
+		ctheta, stheta = np.cos(theta), np.sin(theta)
+		cpsi, spsi   = np.cos(psi), np.sin(psi)
+
+		# Matrices elementales
+		Rx = np.array([
+			[1.0, 0.0, 0.0],
+			[0.0, cphi, sphi],
+			[0.0, -sphi, cphi]
+		])
+
+		Ry = np.array([
+			[ctheta, 0.0, -stheta],
+			[0.0, 1.0, 0.0],
+			[stheta, 0.0, ctheta]
+		])
+
+		Rz = np.array([
+			[cpsi, spsi, 0.0],
+			[-spsi, cpsi, 0.0],
+			[0.0, 0.0, 1.0]
+		])
+
+		# Rotación compuesta
+		R = Rx @ Ry @ Rz
+		self.set_orientation_matrix(R)
+
 
 	def set_quaternion(self, q):
 		"""q = [w, x, y, z] o array-like. Convierte quaternion a matriz y llama a set_orientation_matrix"""
