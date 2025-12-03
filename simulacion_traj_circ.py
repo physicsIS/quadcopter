@@ -45,18 +45,18 @@ t = data['time'].to_numpy()
 # =========================================
 # Crear traza del dron
 # =========================================
-trajectory = curve(color=color.red, radius=0.02)  # rojo, un poco gruesa
+trajectory = curve(color=color.red, radius=0.008)  # rojo, un poco gruesa
 
 # =========================================
 # Bucle de animación
 # =========================================
-fps = 60*4
-
+fps = len(t[t<1.0])
+velocidad_reproduccion = 5.0  # 1x velocidad real
 for i in range(len(t)):
-    rate(fps)  # limita la animación a 60 FPS
+    rate(fps*velocidad_reproduccion)  # limita la animación a 60 FPS
 
     # --- Actualizar tiempo en pantalla ---
-    time_label.text = f"t = {t[i]:.2f} s"
+    time_label.text = f"t = {t[i]:.2f} s --> x{velocidad_reproduccion}"
 
     # --- Movimiento ---
     pos = positions[i]
