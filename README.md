@@ -23,7 +23,7 @@
 | `math_model.ipynb` | Notebook que hace todo el análisis dinámico y de control, y genera la simulación de trayectorias. |
 | `quadcopter_3D.py` | Modelo 3D del quadcopter y funciones para moverlo y rotarlo. |
 | `funciones.py` | Funciones auxiliares, como convertir matrices simbólicas de SymPy para `control`. |
-| `simulacion_traj_circ.py` | Lee CSV con posiciones y orientaciones y genera la animación 3D. |
+| `simulacion_traj.py` | Lee CSV con posiciones y orientaciones y genera la animación 3D. |
 | `drone_lib.py` | Controlador del dron, suavizado de trayectoria y resolución de ecuaciones diferenciales (RK4). |
 | `prueba_simulacion.py` | Ejemplo independiente de cómo usar el modelo 3D y mover el dron. |
 
@@ -79,7 +79,7 @@ Hello! 👋 This project is about **simulating and controlling a quadcopter** us
 | `math_model.ipynb` | Notebook with all dynamic analysis, control, and trajectory simulations. |
 | `quadcopter_3D.py` | 3D quadcopter model and functions to move and rotate it. |
 | `funciones.py` | Helper functions, like converting symbolic SymPy matrices for `control`. |
-| `simulacion_traj_circ.py` | Reads CSV with positions and orientations and animates the quadcopter. |
+| `simulacion_traj.py` | Reads CSV with positions and orientations and animates the quadcopter. |
 | `drone_lib.py` | Drone controller, trajectory smoothing, and differential equation solver (RK4). |
 | `prueba_simulacion.py` | Independent example showing how to use the 3D model and move the drone. |
 
