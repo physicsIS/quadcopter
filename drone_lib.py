@@ -1,5 +1,5 @@
 """
-Simulación de dron con control PID y dinámica linealizada (convención A).
+Simulación de dron con control PID y dinámica linealizada.
 
 Este módulo incluye:
 - Clase PID para controladores generales.
@@ -31,7 +31,7 @@ class PID:
 		ki (float): Ganancia integral.
 		kd (float): Ganancia derivativa.
 		integ_lim (float): Límite absoluto para la integral (previene windup).
-		out_lim (float|None): Límite absoluto de la salida u (None = sin límite).
+		out_lim (float|None): Límite absoluto de la salida u (None = sin límite), es un límite simétrico.
 
 	Methods:
 		reset(): Reinicia integral y error previo.
@@ -42,9 +42,13 @@ class PID:
 		>>> u = pid(0.2, 0.01)
 	"""
 	def __init__(self, kp=0.0, ki=0.0, kd=0.0, integ_lim=10.0, out_lim=None):
-		self.kp, self.ki, self.kd = kp, ki, kd
-		self.integ, self.prev = 0.0, None
-		self.integ_lim, self.out_lim = integ_lim, out_lim
+		self.kp =kp
+		self.ki = ki
+		self.kd = kd
+		self.integ = 0.0 
+		self.prev = None
+		self.integ_lim = integ_lim
+		self.out_lim = out_lim
 
 	def reset(self):
 		"""
@@ -52,7 +56,8 @@ class PID:
 
 		Restablece integral y valor previo del error a su estado inicial.
 		"""
-		self.integ, self.prev = 0.0, None
+		self.integ = 0.0
+		self.prev = None
 
 	def __call__(self, error, dt):
 		"""
@@ -65,12 +70,17 @@ class PID:
 		Returns:
 			u (float): Señal de control calculada por el PID (posiblemente saturada).
 		"""
+
+		# P
 		P = self.kp * error
+		# I
 		self.integ += error * dt
 		self.integ = np.clip(self.integ, -self.integ_lim, self.integ_lim)
 		I = self.ki * self.integ
+		# D
 		D = 0.0 if self.prev is None else self.kd * (error - self.prev) / dt
 		self.prev = error
+		# PID 
 		u = P + I + D
 		if self.out_lim is not None:
 			u = np.clip(u, -self.out_lim, self.out_lim)
@@ -146,6 +156,69 @@ def trajectory_lemniscate(t: float, a: float = 1.0, w: float = 0.2, z0: float = 
 	a_ref = np.array([ddx, ddy, ddz, 0.0])
 	return p_ref, v_ref, a_ref
 
+def trajectory_spiral(
+		t: float,
+		R0: float = 0.5,     # radio inicial
+		R1: float = 2.0,     # radio final
+		w: float = 0.2,      # velocidad angular
+		z0: float = 1.0,     # altura inicial
+		vz: float = 0.1      # velocidad vertical constante
+	):
+	"""
+	Trayectoria helicoidal (espiral 3D) suave en formato [p, v, a].
+
+	El radio crece linealmente:
+		R(t) = R0 + (R1 - R0) * t / T_growth    (implícito)
+
+	Args:
+		t (float): Tiempo actual.
+		R0 (float): Radio inicial.
+		R1 (float): Radio final.
+		w (float): Velocidad angular (rad/s).
+		z0 (float): Altura inicial.
+		vz (float): Velocidad vertical constante.
+
+	Returns:
+		p_ref: [x, y, z, psi]
+		v_ref: [vx, vy, vz, wz]
+		a_ref: [ax, ay, az, az]
+	"""
+
+	# Radio cambiando linealmente con t
+	R = R0 + (R1 - R0) * t * 0.1
+	dR = (R1 - R0) * 0.1        # derivada del radio
+	ddR = 0.0                   # aceleración radial nula
+
+	theta = w * t
+	dtheta = w
+	ddtheta = 0.0
+
+	# Posición
+	x = R * np.cos(theta)
+	y = R * np.sin(theta)
+	z = z0 + vz * t
+
+	# Velocidad
+	vx = dR * np.cos(theta) - R * np.sin(theta) * dtheta
+	vy = dR * np.sin(theta) + R * np.cos(theta) * dtheta
+	vz_val = vz
+
+	# Aceleración
+	ax = (ddR - R * dtheta**2) * np.cos(theta) \
+		 - (2 * dR * dtheta + R * ddtheta) * np.sin(theta)
+
+	ay = (ddR - R * dtheta**2) * np.sin(theta) \
+		 + (2 * dR * dtheta + R * ddtheta) * np.cos(theta)
+
+	az = 0.0
+
+	p_ref = np.array([x, y, z, 0.0])
+	v_ref = np.array([vx, vy, vz_val, 0.0])
+	a_ref = np.array([ax, ay, az, 0.0])
+
+	return p_ref, v_ref, a_ref
+
+
 # ===============================
 # Blending de trayectoria
 # ===============================
@@ -168,16 +241,28 @@ def blend_coeff(t: float, Tr: float):
 	"""
 	if t <= 0: return 0.0,0.0,0.0
 	if t >= Tr: return 1.0,0.0,0.0
-	s = 0.5*(1 - np.cos(np.pi*t/Tr))
-	s_dot = 0.5*(np.pi/Tr)*np.sin(np.pi*t/Tr)
-	s_ddot = 0.5*(np.pi/Tr)**2 * np.cos(np.pi*t/Tr)
+
+	# Hay dos opciones comunes para blending suave:
+	# Descomentar según preferencia
+
+	# Opciones trigonométricas (suave pero no continua en t=0,Tr)
+
+	#s = 0.5*(1 - np.cos(np.pi*t/Tr))
+	#s_dot = 0.5*(np.pi/Tr)*np.sin(np.pi*t/Tr)
+	#s_ddot = 0.5*(np.pi/Tr)**2 * np.cos(np.pi*t/Tr)
+	
+	# Opciones polinómicas ontinua (suave y continua en t=0,Tr)
+	tau = t / Tr
+	s = 10*tau**3 - 15*tau**4 + 6*tau**5
+	s_dot = (30*tau**2 - 60*tau**3 + 30*tau**4) / Tr
+	s_ddot = (60*tau - 180*tau**2 + 120*tau**3) / (Tr**2)
 	return s, s_dot, s_ddot
 
 def blended_trajectory(t: float, traj_func, Tr: float = 5.0, p_init=None, v_init=None, **traj_params):
 	"""
 	Genera trayectoria blendada desde (p_init, v_init) hacia la trayectoria objetivo.
 
-	Se usa para hacer transición suave al inicio evitando saltos en referencia.
+	Se usa para hacer transición suave al inicio evitando saltos en referencia. Esta función es útil para evitar saltos y oscilaciones indeseadas al iniciar la simulación desde una posición y velocidad iniciales distintas a las de la trayectoria deseada.
 
 	Args:
 		t (float): Tiempo actual (s).
@@ -224,13 +309,13 @@ def dynamics(state: np.ndarray, Tprime: float, Nx: float, Ny: float, Nz: float,
 			A: float, B: float, C: float, D: float, g: float, gamma: float, epsilon: float) -> np.ndarray:
 	"""
 	Dinámica linealizada del quadcopter alrededor del hover (12 estados).
+	Las ecuaciones están escritas en forma de un sistema de ecuaciones de primer orden, además, las ecuaciones traslaciones están escritas en el marco inercial, mientras que las ecuaciones de rotación (ecuaciones de derivada de omega) están escritas en el marco del cuerpo y se relacionan con los ángulos de Tait-Bryan (marco inercial) mediante su respectiva matriz.
 
 	Notación de estados:
 		state = [ x, vx, y, vy, z, vz, phi, wx, theta, wy, psi, wz ]
-	donde wx, wy, wz son las velocidades angulares en el marco del cuerpo y
-	sus derivadas son dwx, dwy, dwz.
+	donde wx, wy, wz son las velocidades angulares en el marco del cuerpo.
 
-	Ecuaciones linealizadas usadas (convención A):
+	Ecuaciones linealizadas usadas:
 		dx/dt   = vx
 		dvx/dt  = -B*vx + g * theta
 		dy/dt   = vy
@@ -246,8 +331,8 @@ def dynamics(state: np.ndarray, Tprime: float, Nx: float, Ny: float, Nz: float,
 
 	Args:
 		state (np.ndarray): Estado actual (12,).
-		Tprime (float): Thrust incremental (T' = T - m*g) en unidades coherentes con A.
-		Nx, Ny, Nz (float): Torques físicos aplicados en roll, pitch, yaw respectivamente.
+		Tprime (float): Thrust incremental (T' = T - m*g) en newton.
+		Nx, Ny, Nz (float): Torques aplicados en roll, pitch, yaw (ejes x,y,z) respectivamente.
 		A, B, C, D (float): Coeficientes lineales de la dinámica (definición propia del modelo).
 		g (float): Gravedad (positivo, p.ej. 9.81).
 		gamma (float): 1/Ixx (y = Iyy) — inverso de la inercia en roll/pitch.
@@ -259,13 +344,19 @@ def dynamics(state: np.ndarray, Tprime: float, Nx: float, Ny: float, Nz: float,
 	Example:
 		>>> dxdt = dynamics(state, Tprime, Nx, Ny, Nz, A,B,C,D,9.81,gamma,epsilon)
 	"""
-	x, vx, y, vy, z, vz, phi, wx, theta, wy, psi, wz = state
+	x, vx, y, vy, z, vz, phi, wx, theta, wy, psi, wz = state # Vector de estado
+
+	# Ecuaciones de la dinámica linealizada
+	# Ecuaciones de traslación
 	dxdt = vx; dvxdt = -B*vx + g*theta
 	dydt = vy; dvydt = -C*vy - g*phi
 	dzdt = vz; dvzdt = A*Tprime - D*vz
+	# Ecuaciones de rotación
 	dphidt = wx; dwxdt = Nx*gamma
 	dthetadt = wy; dwydt = Ny*gamma
 	dpsidt = wz; dwzdt = Nz*epsilon
+
+	# Vector de estado derivado
 	return np.array([dxdt, dvxdt, dydt, dvydt, dzdt, dvzdt,
 					dphidt, dwxdt, dthetadt, dwydt, dpsidt, dwzdt])
 
@@ -278,7 +369,7 @@ def outer_controller(state: np.ndarray, p_ref: np.ndarray, v_ref: np.ndarray, a_
 	Outer loop: controlador de posición.
 
 	Función de control de la trayectoria que calcula las *referencias* que usará
-	el inner loop y el input vertical físico Tprime.
+	el inner loop y el input vertical Tprime.
 
 	Flujo:
 		1) Calcula errores de posición (x,y,z).
@@ -293,7 +384,7 @@ def outer_controller(state: np.ndarray, p_ref: np.ndarray, v_ref: np.ndarray, a_
 	Args:
 		state (np.ndarray): Estado actual (12,).
 		p_ref (np.ndarray): Posición de referencia [x,y,z,psi].
-		v_ref (np.ndarray): Velocidad de referencia (no usada directamente, incluida por compatibilidad).
+		v_ref (np.ndarray): Velocidad de referencia (no usada directamente).
 		a_ref (np.ndarray): Aceleración de referencia (feedforward).
 		params (dict): Parámetros y PIDs. Debe contener:
 			- 'pid_x', 'pid_y', 'pid_z' (instancias PID)
@@ -339,7 +430,11 @@ def outer_controller(state: np.ndarray, p_ref: np.ndarray, v_ref: np.ndarray, a_
 	phi_des   = -(ay_des + C * vy) / g             # roll
 
 	# Empuje linealizado (input físico)
+	min_Tprime = params.get('Tprime_min',-np.inf)
+	max_Tprime =  params.get('Tprime_max',np.inf)
+
 	Tprime    = (az_des + D * vz) / A
+	Tprime = float(np.clip(Tprime, min_Tprime,max_Tprime))
 
 	# psi_des proviene de la referencia
 	psi_des = p_ref[3]
@@ -348,7 +443,7 @@ def outer_controller(state: np.ndarray, p_ref: np.ndarray, v_ref: np.ndarray, a_
 
 def inner_controller(state: np.ndarray, phi_des: float, theta_des: float, psi_des: float, params: dict):
 	"""
-	Inner loop: controlador de actitud que calcula TORQUES físicos.
+	Inner loop: controlador de actitud que calcula torques.
 
 	Implementación:
 		- Calcula errores en ángulos (phi, theta, psi).
@@ -393,7 +488,6 @@ def inner_controller(state: np.ndarray, phi_des: float, theta_des: float, psi_de
 	alpha_psi   = params["pid_psi"](e_psi, dt)
 
 	# Convertir aceleración angular -> torque físico
-	# alpha = dω/dt = (1/I) * tau  => tau = alpha / (1/I) = alpha / gamma  (si gamma = 1/I)
 	tau_phi   = alpha_phi   / params["gamma"]
 	tau_theta = alpha_theta / params["gamma"]
 	tau_psi   = alpha_psi   / params["epsilon"]
@@ -413,12 +507,12 @@ def inner_controller(state: np.ndarray, phi_des: float, theta_des: float, psi_de
 
 def simulate(T: float, dt: float, dynamics_func, trajectory_func, outer_controller, inner_controller, state0: np.ndarray, params: dict):
 	"""
-	Simulador genérico de dron usando integración RK4 y control en lazo cascada.
+	Simulador de dron usando integración RK4 y control en lazo cascada.
 
 	Arquitectura:
 		1) trajectory_func(t) -> p_ref, v_ref, a_ref
 		2) outer_controller(state, p_ref, v_ref, a_ref, params) -> (Tprime, phi_des, theta_des, psi_des)
-		3) inner_controller(state, phi_des, theta_des, psi_des, params) -> (Nx, Ny, Nz) (torques físicos)
+		3) inner_controller(state, phi_des, theta_des, psi_des, params) -> (Nx, Ny, Nz)
 		4) dynamics(state, Tprime, Nx, Ny, Nz, ...) -> state_dot
 		5) Integración RK4 con dt
 
@@ -438,9 +532,10 @@ def simulate(T: float, dt: float, dynamics_func, trajectory_func, outer_controll
 		ref_hist (np.ndarray): Historial de referencias p_ref (n,4).
 		u_hist (np.ndarray): Historial de inputs físicos [Tprime, Nx, Ny, Nz] (n,4).
 		Tprime_hist (np.ndarray): Historial de Tprime (n,).
+		params (dict): Diccionario con parámetros usados en la simulación.
 
 	Example:
-		>>> tvec, hist, ref_hist, u_hist, Tprime_hist = simulate(10.0, 0.01, dynamics, blended_trajectory, outer_controller, inner_controller, state0, params)
+		>>> tvec, hist, ref_hist, u_hist, Tprime_hist, params = simulate(10.0, 0.01, dynamics, blended_trajectory, outer_controller, inner_controller, state0, params)
 	"""
 	n = int(T/dt) + 1
 	tvec = np.linspace(0, T, n)
@@ -517,4 +612,4 @@ def simulate(T: float, dt: float, dynamics_func, trajectory_func, outer_controll
 		# Guardar estado
 		hist[i, :] = state
 
-	return tvec, hist, ref_hist, u_hist, Tprime_hist
+	return tvec, hist, ref_hist, u_hist, Tprime_hist, params
