@@ -46,7 +46,7 @@ pip install numpy sympy control vpython pandas matplotlib scienceplots
 ```
 2. Ejecutar la simulación 3D:
 ```bash
-python simulacion_traj_circ.py
+python simulacion_traj.py drone_simulation_results_circle.csv
 ```
 
 
@@ -103,5 +103,5 @@ pip install numpy sympy control vpython pandas matplotlib scienceplots
 
 2. Run 3D simulation:
 ```bash
-python simulacion_traj_circ.py
+python simulacion_traj.py drone_simulation_results_circle.csv
 ```
