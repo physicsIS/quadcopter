@@ -48,7 +48,7 @@ pip install numpy sympy control vpython pandas matplotlib scienceplots jupyterla
 
 ```bash
 conda install -c conda-forge numpy sympy pandas matplotlib control vpython scienceplots jupyterlab
-
+```
 
 2. Ejecutar la simulación 3D:
 ```bash
