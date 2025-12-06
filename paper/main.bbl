@@ -1,0 +1,38 @@
+\begin{thebibliography}{10}
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{\texttt{#1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+\expandafter\ifx\csname href\endcsname\relax
+  \def\href#1#2{#2} \def\path#1{#1}\fi
+
+\bibitem{patrick2020effective}
+O.~O. Patrick, E.~O. Nnadi, H.~C. Ajaelu, Effective use of quadcopter drones for safety and security monitoring in a building construction sites: Case study enugu metropolis nigeria, Journal of Engineering and Technology Research 12~(1) (2020) 37--46.
+
+\bibitem{luukkonen2011modelling}
+T.~Luukkonen, Modelling and control of quadcopter, Independent research project in applied mathematics, Espoo 22~(22) (2011) 1--24.
+
+\bibitem{alkamachi2017modelling}
+A.~Alkamachi, E.~Er{\c{c}}elebi, Modelling and genetic algorithm based-pid control of h-shaped racing quadcopter, Arabian Journal for Science and Engineering 42~(7) (2017) 2777--2786.
+
+\bibitem{cengiz2024quadcopter}
+H.~Cengiz, Quadcopter modeling and linear quadratic regulator design using simulink (2024).
+
+\bibitem{abdulkareem2022modeling}
+A.~Abdulkareem, V.~Oguntosin, O.~M. Popoola, A.~A. Idowu, Modeling and nonlinear control of a quadcopter for stabilization and trajectory tracking, Journal of Engineering 2022~(1) (2022) 2449901.
+
+\bibitem{bechhoefer2021control}
+J.~Bechhoefer, Control theory for physicists, Cambridge University Press, 2021.
+
+\bibitem{aastrom2021feedback}
+K.~J. {\AA}str{\"o}m, R.~Murray, Feedback systems: an introduction for scientists and engineers, Princeton university press, 2021.
+
+\bibitem{ejosat2019}
+M.~Ononiwu, B.~Prabha, Dynamic modeling and simulation of quadrotor for different flight conditions, European Journal of Science and Technology~(18) (2019) 1--10.
+
+\bibitem{niseControl}
+N.~S. Nise, Control Systems Engineering, 7th Edition, Wiley, 2015.
+
+\bibitem{kose2019dynamic}
+O.~K{\"o}se, T.~Oktay, Dynamic modeling and simulation of quadrotor for different flight conditions, Avrupa Bilim ve Teknoloji Dergisi (2019).
+
+\end{thebibliography}

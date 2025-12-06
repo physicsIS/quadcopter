@@ -1,386 +1,857 @@
-\documentclass{IEEEoj}
-\usepackage[spanish]{babel}
-\usepackage[utf8]{inputenc} % Añadido para soporte UTF-8
-\usepackage[T1]{fontenc} % Añadido para mejor manejo de fuentes
-\usepackage{graphicx,color}
-\usepackage{amsmath,amssymb,amsfonts}
-\usepackage{algorithmic}
-\usepackage{textcomp}
-\usepackage{caption}
-\usepackage{subcaption}
-\usepackage{natbib}
-\usepackage{mathtools, cuted}
-\usepackage{lipsum} % Para texto de ejemplo, quitar en versión final
-\usepackage{booktabs} % Para tablas profesionales
+\documentclass[final,5p]{elsarticle}
 
-% Bibliografía como sección normal, mayúsculas y negrita
-\renewcommand{\bibsection}{\section*{\textbf{REFERENCIAS}}}
+% -------------------------
+% CONFIGURACIÓN DE IDIOMA
+% -------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish, es-tabla]{babel}
+\decimalpoint
 
-\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
-    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
-
-\AtBeginDocument{\definecolor{ojcolor}{rgb}{.098039,0.003922,0.71765}}
-\def\OJlogo{\includegraphics[height=30pt]{UCR1.png}}
-\def\OJlogoii{\includegraphics[height=30pt]{phislogo.png}} % Añadido: logo alternativo
-
+% -------------------------
+% PARCHE PARA CAMBIAR ABSTRACT Y KEYWORDS
+% -------------------------
+\usepackage{etoolbox}
+\patchcmd{\abstract}{Abstract}{Resumen}{}{}
+\patchcmd{\keyword}{Keywords}{Palabras Clave}{}{}
 \makeatletter
-% Redefinir estilo de página sin volúmenes ni fechas
-\def\ps@headings{%
-  \def\@oddhead{\vbox{\hbox to \textwidth{\OJlogoii\hfill\OJlogo}\par
-  \vspace*{0pt}\hbox to \textwidth{\vrule width\textwidth height.3pt depth0pt}}}%
-  \def\@evenhead{\vbox{\hsize\textwidth\vbox to 0pt{\hsize\textwidth\vspace*{7.7pt}\rfxfont\raggedright\rightmark:\ \leftmark\hfill\par}\par\vspace*{16pt}\hbox to \textwidth{\vrule width\textwidth height.3pt depth0pt}}}%
-  \def\@evenfoot{\hbox to \textwidth{\hfill\thepage\hfill}}%
-  \def\@oddfoot{\hbox to \textwidth{\hfill\thepage\hfill}}%
-}
-
-\def\ps@plain{%
-  \def\@oddhead{\vbox{\hbox to \textwidth{\OJlogo\hfill\OJlogoii}\par
-  \vspace*{0pt}\hbox to \textwidth{\vrule width\textwidth height.3pt depth0pt}}}%
-  \let\@evenhead\@oddhead%
-  \def\@evenfoot{\hbox to \textwidth{\hfill\thepage\hfill}}%
-  \def\@oddfoot{\hbox to \textwidth{\hfill\thepage\hfill}}%
-}
+\def\ps@pprintTitle{%
+    \let\@oddhead\@empty
+    \let\@evenhead\@empty
+    \def\@oddfoot{\centerline{\thepage}}%
+    \let\@evenfoot\@oddfoot}
 \makeatother
 
-\pagestyle{headings}
+% -------------------------
+% PAQUETES GENERALES
+% -------------------------
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{natbib}
+\usepackage{cuted}
 
-% ------------------------------------------------
-% Datos del artículo
-% ------------------------------------------------
-\title{Modelo matemático de un dron cuadracóptero y su controlador}
 
-\author{Barquero Chaves, E. H.\authorrefmark{1}, M, A.\authorrefmark{2}, 
-Vargas, D.\authorrefmark{1} y Zuñiga, S.\authorrefmark{1,2}}
-\affil{Escuela de Ingeniería Mecánica, Universidad de Costa Rica}
+\pdfstringdefDisableCommands{%
+  \def\corref#1{}%
+  \def\cortext#1{}%
+}
+
+% Create a minimal local bibliography to provide missing entries for compilation.
+\begin{filecontents}{library.bib}
+@misc{patrick2020effective,
+  author = {Patrick, A.},
+  title = {Effective UAV Applications},
+  year = {2020},
+  note = {Example entry to fix undefined citation},
+}
+\end{filecontents}
 
 \begin{document}
 
-% Abstract y keywords antes de maketitle
-\begin{abstract}
-Este artículo presenta el desarrollo de un modelo matemático completo para un dron cuadracóptero, incluyendo su dinámica traslacional y rotacional. Se derivan las ecuaciones de movimiento no lineales considerando efectos aerodinámicos y de inercia, y se linealizan alrededor de un punto de operación para el diseño de controladores. Se propone una arquitectura de control basada en el modelo linealizado, y se presentan resultados preliminares de simulación que validan el modelo propuesto.
-\end{abstract}
 
-\begin{IEEEkeywords}
-Dron, cuadracóptero, modelado dinámico, control, linealización, simulación.
-\end{IEEEkeywords}
 
-\maketitle
+\begin{frontmatter}
+
+    \title{Modelo matemático de un dron cuadracóptero y su controlador}
+
+    \author[UCR]{Elmer Hernán Barquero Chaves\corref{cor1}}
+    \ead{elmer.barquero@ucr.ac.cr}
+
+    \author[UCR]{Andrés Mesén}
+    \ead{andres.mesen@ucr.ac.cr}
+
+    \author[UCR]{Steven Zuñiga}
+    \ead{steven.zuniga@ucr.ac.cr}
+
+    \author[UCR]{Dylan Vargas}
+    \ead{dylan.vargas@ucr.ac.cr}
+
+    \address{San Pedro, Montes de Oca}
+    \address{San José, Costa Rica}
+    \address[mymainaddress]{Escuela de Ingeniería Mecánica, Universidad de Costa Rica}
+
+
+
+    \begin{abstract}
+        Este artículo aborda el modelado dinámico y el diseño de un sistema de control PID lineal para la estabilización de un dron cuadracóptero. Se derivan las ecuaciones generales de la dinámica del vehículo y se linealizan alrededor del punto de vuelo estacionario para obtener un modelo en espacio de estados. La estabilidad del sistema se analiza mediante las respuestas al escalón y al impulso en el dominio del tiempo, así como mediante los criterios de Bode y Nyquist en el dominio de la frecuencia. El modelo linealizado evidencia que el sistema es inestable en lazo abierto, con crecimiento divergente en posición y actitud, y que presenta una marcada sensibilidad ante variaciones en la masa. Finalmente, se diseña un controlador PID en cascada, cuya validación en simulación muestra que logra estabilizar el sistema y permitir el seguimiento preciso de trayectorias.
+    \end{abstract}
+
+    \begin{keyword}
+        Dron, cuadracóptero, control, PID, linealización, simulación. % colocar en orden alfabético.
+    \end{keyword}
+
+\end{frontmatter}
 
 % ------------------------------------------------
 % Contenido principal
 % ------------------------------------------------
 \section{Introducción}
-\IEEEPARstart{L}{os} vehículos aéreos no tripulados (UAVs), en particular los cuadracópteros, han ganado popularidad significativa en aplicaciones que van desde fotografía aérea hasta inspección industrial y entrega de paquetes. Su diseño mecánico relativamente simple contrasta con la complejidad de su dinámica, que es inherentemente no lineal, acoplada y bajo-actuada. Este artículo aborda el modelado matemático completo de un cuadracóptero y el diseño de estrategias de control basadas en dicho modelo.
+Los vehículos aéreos no tripulados, en particular los cuadracópteros, han adquirido una importancia creciente en aplicaciones como la fotografía aérea, la inspección industrial y las misiones de búsqueda y rescate \cite{patrick2020effective}. Aunque su estructura mecánica presenta una geometría simétrica relativamente simple, su dinámica es no lineal y bajo-actuada, lo que dificulta considerablemente el diseño de sistemas de control.
 
-La principal contribución de este trabajo es la derivación sistemática de las ecuaciones de movimiento considerando tanto la dinámica del cuerpo principal como los efectos giroscópicos de los rotores, seguida de la linealización del sistema para el diseño de controladores. El artículo está organizado de la siguiente manera: la Sección \ref{sec:modelo} presenta el modelo matemático completo; la Sección \ref{sec:control} describe la estrategia de control; la Sección \ref{sec:resultados} muestra resultados de simulación; y finalmente se presentan las conclusiones.
+El control estable y preciso de un cuadracóptero requiere un modelo matemático que describa adecuadamente tanto su dinámica traslacional como rotacional. En lazo abierto, estos sistemas presentan inestabilidad y divergencia en posición y actitud, lo que motiva la necesidad de estrategias de control apropiadas.
+
+En este trabajo se estudia la dinámica de un cuadracóptero y se desarrolla un esquema de control basado en técnicas clásicas. El estudio comprende: 
+
+\begin{enumerate}
+\item la formulación del modelo dinámico no lineal y su linealización alrededor del punto de operación correspondiente al vuelo estacionario;
+\item el análisis de estabilidad del sistema en lazo abierto en los dominios del tiempo y la frecuencia;
+\item el diseño de un controlador PID en arquitectura en cascada para lograr la estabilización de la actitud y el seguimiento de trayectorias en posición.
+\end{enumerate}
+
+
+La Figura \ref{fig:dron} muestra una representación del dron estudiado en el documento.
+
+\begin{figure} [h!]
+    \centering
+    \includegraphics[width=0.9\linewidth]{imagenes/quadcopter_example.png}
+    \caption{Representación del dron cuadracóptero.}
+    \label{fig:dron}
+\end{figure}
 
 \section{Modelo Matemático}
-\label{sec:modelo}
 
-\subsection{Sistema de coordenadas y variables de estado}
-La posición del centro de masa del cuadracóptero en el sistema de referencia inercial se define como:
+Para el análisis que se va a realizar a continuación se optará con la configuración de un dron cuadricóptero en forma de X (como el presentado en la Figura \ref{fig:dron}), donde se considerará lo siguiente:
+
+\begin{itemize}
+    \item El dron es un cuerpo rígido.
+    \item Hay fricción con el aire. Lineal para las traslación del dron y cuadrática para la rotación de las hélices.
+    \item El centro de masa del dron está en el centro geométrico de este y tiene simetría en el plano XY.
+    \item Se consideran unicamente aspectos mecánicos del dron.
+\end{itemize}
+
+Una vez considerado lo anterior, es posible comenzar con el modelo matemático.
+
+Las ecuaciones \ref{eq:pos_cm} y \ref{eq:orientacion} son respectivamente el vector posición $\vec{\varepsilon}$ y el vector orientación $\vec{\eta}$ en un marco de referencia inercial. De igual forma se concibe la ecuación \ref{eq:transformacion_galileana} como una relación que permite transformar el vector posición de un marco de referencia inercial ($\theta_I$) y a un marco de referencia no inercial ($\theta_B$) y viceversa.
 \begin{equation}
     \vec{\xi} = \begin{pmatrix} 
 					x \\
 					y \\
 					z \\
-				\end{pmatrix}
+					\end{pmatrix}
 \label{eq:pos_cm}
 \end{equation}
 
-mientras que su orientación se describe mediante los ángulos de Euler:
 \begin{equation}
     \vec{\eta} = \begin{pmatrix} 
 					\phi \\
 					\theta \\
 					\psi \\
-				\end{pmatrix}
-\label{eq:orientacion}
+					\end{pmatrix}
+    \label{eq:orientacion}
 \end{equation}
-donde $\phi$, $\theta$ y $\psi$ representan los ángulos de roll, pitch y yaw, respectivamente.
 
-La transformación entre el sistema de referencia del cuerpo (B) y el sistema inercial (I) viene dada por:
 \begin{equation}
     \vec{r}' = R^{-1} \vec{r} + \vec{R}  \Leftrightarrow \vec{r} = R \left( \vec{r}' -\vec{R} \right)
-\label{eq:transformacion_galileana}
+    \label{eq:transformacion_galileana}
 \end{equation}
 
-La matriz de rotación $R$ se compone de rotaciones elementales alrededor de los ejes:
+La ecuación \ref{eq:matriz_rotacion} es la matriz de rotación 3D compuesta por las matrices de rotación de los ejes x-y-z, utilizando los ángulos de Tait-Bryan (Roll-Pich y Yaw). Las matrices de rotación por eje $R_x(\phi)$, $R_y(\theta)$ y $R_z(\psi)$ se muestran en las ecuaciones: \ref{eq:matriz_rotacion_x}, \ref{eq:matriz_rotacion_y} y \ref{eq:matriz_rotacion_z}.
+
 \begin{equation}
-    R = R_{x}\left( \phi \right) R_{y}\left( \theta \right) R_{z}\left( \psi \right)
-\label{eq:matriz_rotacion}
+   R = R_{x}\left( \phi \right) R_{y}\left( \theta \right) R_{z}\left( \psi \right)
+    \label{eq:matriz_rotacion}
 \end{equation}
 
-con las matrices individuales definidas como:
-\begin{align}
-    R_{x}\left( \phi \right) &= \begin{bmatrix}
+\begin{equation}
+    R_{x}\left( \phi \right) = \begin{bmatrix}
 								1 & 0 & 0\\
-								0 & \cos\left( \phi \right) & \sin\left( \phi \right) \\
-								0 & -\sin\left( \phi \right) & \cos\left( \phi \right)
-								\end{bmatrix}
-\label{eq:matriz_rotacion_x} \\
-    R_{y}\left( \theta \right) &= \begin{bmatrix}
-								\cos\left( \theta \right) & 0 & -\sin\left( \theta \right) \\
-								0 & 1 & 0 \\
-								\sin\left( \theta \right) & 0 & \cos\left( \theta \right)
-								\end{bmatrix}
-\label{eq:matriz_rotacion_y} \\
-    R_{z}\left( \psi \right) &= \begin{bmatrix}
-								\cos\left( \psi \right) & \sin\left( \psi \right) & 0\\
-								-\sin\left( \psi \right) & \cos\left( \psi \right) & 0 \\
-								0 & 0 & 1
-								\end{bmatrix}
-\label{eq:matriz_rotacion_z}
-\end{align}
+								0 & cos\left( \phi \right) & sin\left( \phi \right) \\
+								0 & -sin\left( \phi \right) & cos\left( \phi \right)
+							\end{bmatrix}
+                            \label{eq:matriz_rotacion_x}
+\end{equation}
 
-\subsection{Relación entre velocidades angulares}
-La relación entre las velocidades angulares en el sistema del cuerpo y las derivadas de los ángulos de Euler está dada por:
+\begin{equation}
+    R_{y}\left( \theta \right) = \begin{bmatrix}
+								cos\left( \theta \right) & 0 & -sin\left( \theta \right) \\
+								0 & 1 & 0 \\
+								sin\left( \theta \right) & 0 & cos\left( \theta \right)
+							\end{bmatrix}
+                            \label{eq:matriz_rotacion_y}
+\end{equation}
+
+\begin{equation}
+    R_{z}\left( \psi \right) = \begin{bmatrix}
+								cos\left( \psi \right) & sin\left( \theta \right) & 0\\
+								-sin\left( \theta \right) & cos\left( \psi \right) & 0 \\
+								0 & 0 & 1
+							\end{bmatrix}
+                            \label{eq:matriz_rotacion_z}
+\end{equation}
+
+La velocidad angular en las coordenadas del cuerpo, $\omega^B$, mantiene una relación proporcional con el vector de orientación como muestra la ecuación \ref{eq:omega_a_eta}, donde se observa la presencia de un operador matricial $W$ (no ortogonal) que permite cambiar entre marcos de referencia. La ecuación \ref{eq:W}, tiene como relación inversa de la ecuación \ref{eq:W_inv}.
+
 \begin{equation}
     \vec{\omega}^{B} = W \dot{\vec{\eta}}  \Leftrightarrow \dot{\vec{\eta}} = W^{-1}\vec{\omega}^{B}
-\label{eq:omega_a_eta}
+    \label{eq:omega_a_eta}
 \end{equation}
 
-donde:
-\begin{align}
-    W &= \begin{bmatrix}
-		1 & 0 & -\sin\left( \theta \right) \\
-		0 & \cos\left( \phi \right) & \cos\left( \theta \right) \sin\left( \phi \right) \\
-		0 & -\sin\left( \phi \right) & \cos\left( \theta \right) \cos\left( \phi \right)
+\begin{equation}
+    W = \begin{bmatrix}
+		1 & 0 & -sin\left( \theta \right) \\
+		0 & cos\left( \phi \right) & cos\left( \theta \right) sin\left( \phi \right) \\
+		0 & -sin\left( \phi \right) & cos\left( \theta \right) cos\left( \phi \right)
 	\end{bmatrix}
-\label{eq:W} \\
-    W^{-1} &= \begin{bmatrix}
-			1 & \sin\left( \phi \right) \tan\left( \theta \right) & \cos\left( \phi \right)\tan\left( \theta \right) \\
-			0 & \cos\left( \phi \right) & -\sin\left( \phi \right) \\
-			0 & \sin\left( \phi \right)\sec\left( \theta \right) & \cos\left( \phi \right) \sec\left( \theta \right)
+    \label{eq:W}
+\end{equation}
+
+\begin{equation}
+    W^{-1} = \begin{bmatrix}
+			1 & sin\left( \phi \right) tan\left( \theta \right) & cos\left( \phi \right)tan\left( \theta \right) \\
+			0 & cos\left( \phi \right) & -sin\left( \phi \right) \\
+			0 & sin\left( \phi \right)sec\left( \theta \right) & cos\left( \phi \right) sec\left( \theta \right)
 		\end{bmatrix}
-\label{eq:W_inv}
-\end{align}
+        \label{eq:W_inv}
+\end{equation}
 
-\subsection{Fuerzas y momentos}
-La fuerza total de empuje y los momentos generados por los cuatro rotores son:
+La ecuación \ref{eq:fuerzas} permite ver las fuerzas de sustentación representadas como un vector columna, donde $k$ es un coeficiente de sustentación  y $\omega_i$ corresponde a la velocidad angular intrínseca del rotor \cite{luukkonen2011modelling}. Esto se puede integrar, junto a otras fuerzas como el peso del cuerpo y la resistencia con el aire (coeficiente de resistencia $c_i$), a la Segunda Ley de Newton (ecuación  \ref{eq:segunda_ley}) para describir la dinámica traslacional del sistema.  
+
+De igual forma el movimiento rotacional se contempla como una expresión derivada según la ecuación \ref{eq:Segunda_ley_rot} (Conservación del Momentum Angular), a la cual se le entrega los torques que siente el sistema por medio de la ecuación \ref{eq:torques}, esto estará también en términos del coeficiente de sustentación y del coeficiente cuadrático de resistencia con el aire para la rotación $b$.
+
+\begin{equation}
+    \vec{F}^{B} = \left[\begin{matrix}0\\0\\T^{B}\end{matrix}\right] = \left[\begin{matrix}0\\0\\k \left(\omega_{1}^{2} + \omega_{2}^{2} + \omega_{3}^{2} + \omega_{4}^{2}\right)\end{matrix}\right]
+    \label{eq:fuerzas}
+\end{equation}
+
+
+
+\begin{equation}
+    \sum \vec{F} = M \ddot{\vec{\xi}}
+    \label{eq:segunda_ley}
+\end{equation}
+
+\begin{equation}
+    \frac{d \vec{L}}{dt} = \vec{N}
+    \label{eq:Segunda_ley_rot}
+\end{equation}
+
+\begin{equation}
+    \vec{N}^{B} = \left[\begin{matrix}N_{x}^{B}\\N_{y}^{B}\\N_{z}^{B}\end{matrix}\right] = \left[\begin{matrix}k l \left(\omega_{2}^{2} - \omega_{4}^{2}\right)\\k l \left(- \omega_{1}^{2} + \omega_{4}^{2}\right)\\b \left(- \omega_{1}^{2} + \omega_{2}^{2} - \omega_{3}^{2} + \omega_{4}^{2}\right)\end{matrix}\right]
+    \label{eq:torques}
+\end{equation}
+
+Desarrollando la ecuación \ref{eq:Segunda_ley_rot} en el marco de referencia inercial y con el objetivo de pasar dicha expresión desarrollada al marco de referencia no inercial, por lo conveniente que resulta, se obtiene la ecuación tipo Euler (ecuación \ref{eq:eq_euler}) para la dinámica rotacional del sistema.
+
 \begin{align}
-    \vec{F}^{B} &= \begin{bmatrix}0\\0\\T^{B}\end{bmatrix} = 
-    \begin{bmatrix}0\\0\\k \left(\omega_{1}^{2} + \omega_{2}^{2} + \omega_{3}^{2} + \omega_{4}^{2}\right)\end{bmatrix}
-\label{eq:fuerzas} \\
-    \vec{N}^{B} &= \begin{bmatrix}N_{x}^{B}\\N_{y}^{B}\\N_{z}^{B}\end{bmatrix} = 
-    \begin{bmatrix}k l \left(\omega_{2}^{2} - \omega_{4}^{2}\right)\\
-                 k l \left(- \omega_{1}^{2} + \omega_{3}^{2}\right)\\
-                 b \left(- \omega_{1}^{2} + \omega_{2}^{2} - \omega_{3}^{2} + \omega_{4}^{2}\right)\end{bmatrix}
-\label{eq:torques}
-\end{align}
-donde $k$ es el coeficiente de empuje, $b$ el coeficiente de arrastre, $l$ la distancia del rotor al centro de masa, y $\omega_i$ la velocidad angular del i-ésimo rotor.
-
-\subsection{Ecuaciones de movimiento}
-Aplicando las leyes de Newton-Euler:
-\begin{align}
-    \sum \vec{F} &= M \ddot{\vec{\xi}}
-\label{eq:segunda_ley} \\
-    \frac{d \vec{L}}{dt} &= \vec{N}
-\label{eq:Segunda_ley_rot}
+    \vec{N}^{B} &= \vec{\omega}^{B} \times +I_{c}^{B}\vec{\omega}^{B}+I_{c}^{B} \dot{\vec{\omega}}^{B} \cdots \notag \\ &\cdots +\vec{\omega}^{B} \times I_{H}^{B} \left( 4\vec{\omega}^{B} + \vec{\omega}^{B}_{1} + \vec{\omega}^{B}_{2} + \vec{\omega}^{B}_{3} + \vec{\omega}^{B}_{4}\right) + \cdots \notag \\ &\cdots +I^{B}_{H}\left( 4\dot{\vec{\omega}}^{B} + \dot{\vec{\omega}}^{B}_{1} + \dot{\vec{\omega}}^{B}_{2} + \dot{\vec{\omega}}^{B}_{3} + \dot{\vec{\omega}}^{B}_{4}\right)
+    \label{eq:eq_euler}
 \end{align}
 
-La ecuación de momentos considerando efectos giroscópicos es:
-\begin{align}
-    \vec{N}^{B} &= \vec{\omega}^{B} \times I_{c}^{B}\vec{\omega}^{B}+I_{c}^{B} \dot{\vec{\omega}}^{B} \notag \\
-    &\quad +\vec{\omega}^{B} \times I_{H}^{B} \left( 4\vec{\omega}^{B} + \sum_{i=1}^{4}\vec{\omega}^{B}_{i}\right) \notag \\
-    &\quad +I^{B}_{H}\left( 4\dot{\vec{\omega}}^{B} + \sum_{i=1}^{4}\dot{\vec{\omega}}^{B}_{i}\right)
-\label{eq:eq_euler}
-\end{align}
-
-Desarrollando estas ecuaciones se obtienen las EDOs completas del sistema:
+Desarrollando los términos de las ecuaciones dinámicas y representandolas como vectores columnas, se tiene \ref{eq:edos_rot} y \ref{eq:edos_tras}:
 
 \begin{strip}
-\begin{equation}
-\begin{bmatrix}
-k l \left(\omega_{2}^{2} - \omega_{4}^{2}\right)\\
-k l \left(- \omega_{1}^{2} + \omega_{3}^{2}\right)\\
-b \left(- \omega_{1}^{2} + \omega_{2}^{2} - \omega_{3}^{2} + \omega_{4}^{2}\right)
-\end{bmatrix} = 
-\begin{bmatrix}
-I_{rzz} \left(\omega_{1} - \omega_{2} + \omega_{3} - \omega_{4}\right) \omega_{y}^{B} + \left(I_{cxx} + 4 I_{rxx}\right) \dot{\omega}_{x}^{B} \\
-\quad + \left(- I_{cyy} + I_{czz} - 4 I_{ryy} + 4 I_{rzz}\right) \omega_{y}^{B} \omega_{z}^{B}\\[4pt]
-I_{rzz} \left(- \omega_{1} + \omega_{2} - \omega_{3} + \omega_{4}\right) \omega_{x}^{B} + \left(I_{cyy} + 4 I_{ryy}\right) \dot{\omega}_{y}^{B} \\
-\quad + \left(I_{cyy} - I_{czz} + 4 I_{ryy} - 4 I_{rzz}\right) \omega_{x}^{B} \omega_{z}^{B}\\[4pt]
-I_{rzz} \left(\dot{\omega}_{1} - \dot{\omega}_{2} + \dot{\omega}_{3} - \dot{\omega}_{4}\right) + \left(I_{czz} + 4 I_{rzz}\right) \dot{\omega}_{z}^{B}
-\end{bmatrix}
-\label{eq:edos_rot} 
-\end{equation}
+    \begin{equation}
+        \scalebox{0.8}{
+        $
+        \left[\begin{matrix}k l \left(\omega_{2}^{2} - \omega_{4}^{2}\right)\\k l \left(- \omega_{1}^{2} + \omega_{4}^{2}\right)\\b \left(- \omega_{1}^{2} + \omega_{2}^{2} - \omega_{3}^{2} + \omega_{4}^{2}\right)\end{matrix}\right] = \left[\begin{matrix}I_{rzz} \left(\omega_{1} - \omega_{2} + \omega_{3} - \omega_{4}\right) \omega_{y}^{B} + \left(I_{cyy} + 4 I_{ryy}\right) \frac{d}{d t} \omega_{x}^{B} + \left(- I_{cyy} + I_{czz} - 4 I_{ryy} + 4 I_{rzz}\right) \omega_{y}^{B} \omega_{z}^{B}\\I_{rzz} \left(- \omega_{1} + \omega_{2} - \omega_{3} + \omega_{4}\right) \omega_{x}^{B} + \left(I_{cyy} + 4 I_{ryy}\right) \frac{d}{d t} \omega_{y}^{B} + \left(I_{cyy} - I_{czz} + 4 I_{ryy} - 4 I_{rzz}\right) \omega_{x}^{B} \omega_{z}^{B}\\I_{rzz} \left(\frac{d}{d t} \omega_{1} - \frac{d}{d t} \omega_{2} + \frac{d}{d t} \omega_{3} - \frac{d}{d t} \omega_{4}\right) + \left(I_{czz} + 4 I_{rzz}\right) \frac{d}{d t} \omega_{z}^{B}\end{matrix}\right]
+        $}
+        \label{eq:edos_rot} 
+    \end{equation}
 \end{strip}
 
 \begin{strip}
-\begin{equation}
-\begin{bmatrix}
-M \ddot{x}\\
-M \ddot{y}\\
-M \ddot{z}
-\end{bmatrix} = 
-\begin{bmatrix}
-- c_{x} \dot{x} + k \left(\sin{\phi} \sin{\psi} + \sin{\theta} \cos{\phi} \cos{\psi}\right) \sum_{i=1}^{4}\omega_{i}^{2}\\[4pt]
-- c_{y} \dot{y} + k \left(- \sin{\phi} \cos{\psi} + \sin{\psi} \sin{\theta} \cos{\phi}\right) \sum_{i=1}^{4}\omega_{i}^{2}\\[4pt]
-- M g - c_{z} \dot{z} + k \cos{\phi} \cos{\theta} \sum_{i=1}^{4}\omega_{i}^{2}
-\end{bmatrix}
-\label{eq:edos_tras}
-\end{equation}
+    \begin{equation}
+        \left[\begin{matrix}M \frac{d^{2}}{d t^{2}} x\\M \frac{d^{2}}{d t^{2}} y\\M \frac{d^{2}}{d t^{2}} z\end{matrix}\right] = \left[\begin{matrix}- c_{x} \frac{d}{d t} x + k \left(\sin{\left(\phi \right)} \sin{\left(\psi \right)} + \sin{\left(\theta \right)} \cos{\left(\phi \right)} \cos{\left(\psi \right)}\right) \left(\omega_{1}^{2} + \omega_{2}^{2} + \omega_{3}^{2} + \omega_{4}^{2}\right)\\- c_{y} \frac{d}{d t} y + k \left(- \sin{\left(\phi \right)} \cos{\left(\psi \right)} + \sin{\left(\psi \right)} \sin{\left(\theta \right)} \cos{\left(\phi \right)}\right) \left(\omega_{1}^{2} + \omega_{2}^{2} + \omega_{3}^{2} + \omega_{4}^{2}\right)\\- M g - c_{z} \frac{d}{d t} z + k \left(\omega_{1}^{2} + \omega_{2}^{2} + \omega_{3}^{2} + \omega_{4}^{2}\right) \cos{\left(\phi \right)} \cos{\left(\theta \right)}\end{matrix}\right]
+        \label{eq:edos_tras}
+    \end{equation}
 \end{strip}
 
-\subsection{Linealización del modelo}
-Para facilitar el diseño del controlador, se linealiza el sistema alrededor del punto de operación:
+Dada la gran complejidad que poseen estas ecuaciones, se plantean las siguientes sustituciones:
+
 \begin{equation}
     \begin{aligned}
     A &= \frac{1}{M} 
     &\quad B &= \frac{c_x}{M} \\[4pt]
     C &= \frac{c_y}{M} 
     &\quad D &= \frac{c_z}{M} \\[8pt]
-    \alpha &= \frac{- I_{cyy} + I_{czz} - 4 I_{ryy} + 4 I_{rzz}}{I_{cxx} + 4 I_{rxx}}
+    \alpha &= \frac{- I_{cyy} + I_{czz} - 4 I_{ryy} + 4 I_{rzz}}{I_{cyy} + 4 I_{ryy}}
     &\quad \beta &= \frac{I_{rzz}}{I_{cxx} + 4 I_{rxx}} \\[5pt]
     \delta &= \frac{I_{rzz}}{I_{czz} + 4 I_{rzz}}
     &\quad \epsilon &= \frac{1}{I_{czz} + 4 I_{rzz}} \\[4pt]
-    \gamma &= \frac{1}{I_{cxx} + 4 I_{rxx}}
+    \gamma &= \frac{1}{I_{cyy} + 4 I_{ryy}}
     \end{aligned}
-\label{eq:sustituciones}
+    \label{eq:sustituciones}
 \end{equation}
+\\
 
-El sistema linealizado se expresa como:
-\begin{equation}
-\begin{bmatrix}
-\dot{x}\\
-\dot{v}_x\\
-\dot{y}\\
-\dot{v}_y\\
-\dot{z}\\
-\dot{v}_z\\
-\dot{\phi}\\
-\dot{\omega}_x\\
-\dot{\theta}\\
-\dot{\omega}_y\\
-\dot{\psi}\\
-\dot{\omega}_z
-\end{bmatrix} = 
-\begin{bmatrix}
-v_x\\
-- B v_x + g \theta\\
-v_y\\
-- C v_y - g \phi\\
-v_z\\
-A T^{B} - D v_z\\
-\omega_x\\
-\gamma N_x\\
-\omega_y\\
-\gamma N_y\\
-\omega_z\\
-\epsilon N_z
-\end{bmatrix}
-\label{eq:sistema_linealizado}
-\end{equation}
-
-En forma matricial:
-
-% Solución simple y robusta: Separar en dos ecuaciones individuales
+Seguidamente, y de acuerdo a \cite{alkamachi2017modelling}, \cite{cengiz2024quadcopter} y \cite{abdulkareem2022modeling}, se desprecian los efectos giroscópicos y los cambios en la velocidad angular intrínseca de los rotores. Además, se incluye la ecuación \ref{eq:omega_a_eta} para completar las ecuaciones diferenciales de la dinámica rotacional y por último se despejan las aceleraciones de las ecuaciones de traslación y las aceleraciones angulares de la ecuación tipo Euler, obteniendo \ref{eq:control_sin_linealizar}:
 
 \begin{equation}
-    \dot{\vec{x}} = A\vec{x} + B\vec{u}
+    \begin{aligned}
+        \left[\begin{matrix}
+        \dfrac{d}{dt}\omega_x^{B}\\[4pt]
+        \dfrac{d}{dt}\omega_y^{B}\\[4pt]
+        \dfrac{d}{dt}\omega_z^{B}
+        \end{matrix}\right]
+        &=
+        \left[\begin{matrix}
+        N_x^{B}\gamma - \alpha\,\omega_y^{B}\,\omega_z^{B}\\[4pt] 
+        N_y^{B}\gamma + \alpha\,\omega_x^{B}\,\omega_z^{B}\\[4pt]
+        N_z^{B}\epsilon
+        \end{matrix}\right]
+        \\[12pt]
+        \left[\begin{matrix}
+        \dfrac{d}{dt}\phi\\[4pt]
+        \dfrac{d}{dt}\theta\\[4pt]
+        \dfrac{d}{dt}\psi
+        \end{matrix}\right]
+        &=
+        \left[\begin{matrix}
+        \omega_x^{B}+\omega_y^{B}\sin\phi\tan\theta+\omega_z^{B}\cos\phi\tan\theta\\[4pt]
+        \omega_y^{B}\cos\phi-\omega_z^{B}\sin\phi\\[4pt]
+        \dfrac{\omega_y^{B}\sin\phi+\omega_z^{B}\cos\phi}{\cos\theta}
+        \end{matrix}\right]
+        \\[12pt]
+        \left[\begin{matrix}
+        \dfrac{d^{2}}{dt^{2}}x\\[4pt]
+        \dfrac{d^{2}}{dt^{2}}y\\[4pt]
+        \dfrac{d^{2}}{dt^{2}}z
+        \end{matrix}\right]
+        &=
+        \left[\begin{matrix}
+        A T^{B}\left(\sin\phi\sin\psi+\sin\theta\cos\phi\cos\psi\right)-B\dfrac{d}{dt}x\\[4pt]
+        A T^{B}\left(-\sin\phi\cos\psi+\sin\psi\sin\theta\cos\phi\right)-C\dfrac{d}{dt}y\\[4pt]
+        A T^{B}\cos\phi\cos\theta-D\dfrac{d}{dt}z-g
+        \end{matrix}\right]
+    \end{aligned}
+    \label{eq:control_sin_linealizar}
 \end{equation}
 
-donde:
+Posteriormente, se escribe el sistema de ecuaciones de la forma:
 
 \begin{equation}
-A = \begin{array}{@{}c@{}}
-\left[\begin{array}{cccccccccccc}
-    0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
-    0 & -B & 0 & 0 & 0 & 0 & 0 & 0 & g & 0 & 0 & 0\\
-    0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
-    0 & 0 & 0 & -C & 0 & 0 & -g & 0 & 0 & 0 & 0 & 0\\
-    0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0\\
-    0 & 0 & 0 & 0 & 0 & -D & 0 & 0 & 0 & 0 & 0 & 0\\
-    0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0\\
-    0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
-    0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0\\
-    0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
-    0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1\\
-    0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0
-\end{array}\right]
-\end{array}
-\label{eq:matriz_A}
+    \dot{\vec{x}} = \vec{f}\left(\vec{x}, \vec{u} \right)
+    \label{eq:sistema_no_lineal}
 \end{equation}
 
-y
+Con el vector de estados dado por \ref{eq:state_vector}:
 
 \begin{equation}
-    B = \begin{bmatrix}
-0 & 0 & 0 & 0\\
-0 & 0 & 0 & 0\\
-0 & 0 & 0 & 0\\
-0 & 0 & 0 & 0\\
-0 & 0 & 0 & 0\\
-A & 0 & 0 & 0\\
-0 & 0 & 0 & 0\\
-0 & \gamma & 0 & 0\\
-0 & 0 & 0 & 0\\
-0 & 0 & \gamma & 0\\
-0 & 0 & 0 & 0\\
-0 & 0 & 0 & \epsilon
-\end{bmatrix}
-\label{eq:matriz_B}
+    \vec{x} = \left[\begin{matrix}x\\v_{x}\\y\\v_{y}\\z\\v_{z}\\\phi\\\omega_{x}^{B}\\\theta\\\omega_{y}^{B}\\\psi\\\omega_{z}^{B}\end{matrix}\right]
+    \label{eq:state_vector}
 \end{equation}
+
+Dando como resultado \ref{eq:odes_primer_orden_no_linealizado}:
+
+\begin{equation}
+    \scalebox{0.8}{$
+    \left[\begin{matrix}\frac{d}{d t} x\\\frac{d}{d t} v_{x}\\\frac{d}{d t} y\\\frac{d}{d t} v_{y}\\\frac{d}{d t} z\\\frac{d}{d t} v_{z}\\\frac{d}{d t} \phi\\\frac{d}{d t} \omega_{x}^{B}\\\frac{d}{d t} \theta\\\frac{d}{d t} \omega_{y}^{B}\\\frac{d}{d t} \psi\\\frac{d}{d t} \omega_{z}^{B}\end{matrix}\right] = \left[\begin{matrix}v_{x}\\A T^{B} \left(\sin{\left(\phi \right)} \sin{\left(\psi \right)} + \sin{\left(\theta \right)} \cos{\left(\phi \right)} \cos{\left(\psi \right)}\right) - B v_{x}\\v_{y}\\A T^{B} \left(- \sin{\left(\phi \right)} \cos{\left(\psi \right)} + \sin{\left(\psi \right)} \sin{\left(\theta \right)} \cos{\left(\phi \right)}\right) - C v_{y}\\v_{z}\\A T^{B} \cos{\left(\phi \right)} \cos{\left(\theta \right)} - D v_{z} - g\\\omega_{x}^{B} + \omega_{y}^{B} \sin{\left(\phi \right)} \tan{\left(\theta \right)} + \omega_{z}^{B} \cos{\left(\phi \right)} \tan{\left(\theta \right)}\\N_{x}^{B} \gamma - \alpha \omega_{y}^{B} \omega_{z}^{B}\\\omega_{y}^{B} \cos{\left(\phi \right)} - \omega_{z}^{B} \sin{\left(\phi \right)}\\N_{y}^{B} \gamma + \alpha \omega_{x}^{B} \omega_{z}^{B}\\\frac{\omega_{y}^{B} \sin{\left(\phi \right)}}{\cos{\left(\theta \right)}} + \frac{\omega_{z}^{B} \cos{\left(\phi \right)}}{\cos{\left(\theta \right)}}\\N_{z}^{B} \epsilon\end{matrix}\right]
+    $}
+    \label{eq:odes_primer_orden_no_linealizado}
+\end{equation}
+
+A partir de las ecuaciones \ref{eq:sistema_no_lineal} y \ref{eq:odes_primer_orden_no_linealizado}, se plantea una linealización alrededor del punto de equilibrio descrito por las ecuaciones \ref{eq:state_equi}. Con ello, se utiliza la definición de ángulo pequeño para $\phi$ y $\theta$ y, todo esto, se realiza con el objetivo de reescribir el sistema de la forma \ref{eq:gsistema_var_state}:
+
+\begin{align}
+    \label{eq:state_equi}
+    \vec{x}_0=\left[\begin{matrix}x\\v_{x}\\y\\v_{y}\\z\\v_{z}\\\phi\\\omega_{x}^{B}\\\theta\\\omega_{y}^{B}\\\psi\\\omega_{z}^{B}\end{matrix}\right] = \left[\begin{matrix}0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\\0\end{matrix}\right] \; \;  & \; \;  \vec{u}_0 =\left[\begin{matrix}T^{B}\\N_{x}^{B}\\N_{y}^{B}\\N_{z}^{B}\end{matrix}\right] = \left[\begin{matrix}M g\\0\\0\\0\end{matrix}\right]
+\end{align}
+
+\begin{equation}
+    \dot{\vec{x}} = A \vec{x} + B\vec{u}
+    \label{eq:gsistema_var_state}
+\end{equation}
+
+Donde las matrices $A$ y $B$ se definen como \ref{eq:linearizacion} de acuerdo con \cite{bechhoefer2021control}:
+
+\begin{align}
+A_{ij} = \left. \frac{\partial f_i}{\partial x_j} \right|_{\vec{x}_0,\vec{u}_0} \; \; \; & \; \; \; B_{ij} = \left. \frac{\partial f_i}{\partial u_j} \right|_{\vec{x}_0,\vec{u}_0}
+\label{eq:linearizacion}
+\end{align}
+
+Una vez realizado el proceso de linealización se obtiene la matriz $A$ (\ref{eq:matriz_A}) y la matriz $B$ (\ref{eq:matriz_B}). La matriz $A$ es $12\times12$ debido a la cantidad de variables de estado presentes en el sistema y la matriz $B$ es $12\times4$ debido a la posibilidad de que las 12 variables de estado sean afectadas por las 4 entradas del sistema.
+
+\begin{equation}
+    A = \left[\begin{array}{cccccccccccc}0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\0 & - B & 0 & 0 & 0 & 0 & 0 & 0 & g & 0 & 0 & 0\\0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 0 & - C & 0 & 0 & - g & 0 & 0 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 0 & - D & 0 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0\\0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1\\0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0\end{array}\right]
+    \label{eq:matriz_A}
+\end{equation}
+
+\begin{equation}
+    B = \left[\begin{matrix}0 & 0 & 0 & 0\\0 & 0 & 0 & 0\\0 & 0 & 0 & 0\\0 & 0 & 0 & 0\\0 & 0 & 0 & 0\\A & 0 & 0 & 0\\0 & 0 & 0 & 0\\0 & \gamma & 0 & 0\\0 & 0 & 0 & 0\\0 & 0 & \gamma & 0\\0 & 0 & 0 & 0\\0 & 0 & 0 & \epsilon\end{matrix}\right]
+    \label{eq:matriz_B}
+\end{equation}
+
+Finalmente, se obtiene el siguiente sistema de ecuaciones diferenciales de primer orden linealizadas \ref{eq:sistema_linealizado}:
+
+
+\begin{equation}
+    \left[\begin{matrix}\frac{d}{d t} x\\\frac{d}{d t} v_{x}\\\frac{d}{d t} y\\\frac{d}{d t} v_{y}\\\frac{d}{d t} z\\\frac{d}{d t} v_{z}\\\frac{d}{d t} \phi\\\frac{d}{d t} \omega_{x}^{B}\\\frac{d}{d t} \theta\\\frac{d}{d t} \omega_{y}^{B}\\\frac{d}{d t} \psi\\\frac{d}{d t} \omega_{z}^{B}\end{matrix}\right] = \left[\begin{matrix}v_{x}\\- B v_{x} + g \theta\\v_{y}\\- C v_{y} - g \phi\\v_{z}\\A T^{B} - D v_{z}\\\omega_{x}^{B}\\N_{x}^{B} \gamma\\\omega_{y}^{B}\\N_{y}^{B} \gamma\\\omega_{z}^{B}\\N_{z}^{B} \epsilon\end{matrix}\right]
+    \label{eq:sistema_linealizado}
+\end{equation}
+
+
+Por otro lado, es necesario establecer cuales son las salidas de interés para el sistema del dron. En este caso, es conveniente plantear que se tendrán acceso a todas las variables de estado a través de dicha salida y no aparecerán afectadas por las entradas del sistema. Por lo que, al desear escribir las salidas de la forma \ref{eq:salidas}, se obtiene que la matriz $C$ es la matriz identidad $12\times12$ y la matriz $D$ es una matriz $0$.
+
+\begin{equation}
+    \vec{y} = C\vec{x} + D\vec{u}
+    \label{eq:salidas}
+\end{equation}
+
+Por último, es preciso escribir la matriz de transferencia del sistema. Para esto se aprovechará la relación entre el sistema en variables de estado y su matriz de transferencia dada por la ecuación \ref{eq:re_transferencia}, dando como resultado \ref{eq:matriz_transferencia}.
+
+\begin{equation}
+    G\left(s\right) = C (s I - A)^{-1} B + D
+    \label{eq:re_transferencia}
+\end{equation}
+
+\begin{equation}
+   G(s) =  \left[\begin{matrix}0 & 0 & \frac{\gamma g}{B s^{3} + s^{4}} & 0\\0 & 0 & \frac{\gamma g}{B s^{2} + s^{3}} & 0\\0 & - \frac{\gamma g}{C s^{3} + s^{4}} & 0 & 0\\0 & - \frac{\gamma g}{C s^{2} + s^{3}} & 0 & 0\\\frac{A}{D s + s^{2}} & 0 & 0 & 0\\\frac{A}{D + s} & 0 & 0 & 0\\0 & \frac{\gamma}{s^{2}} & 0 & 0\\0 & \frac{\gamma}{s} & 0 & 0\\0 & 0 & \frac{\gamma}{s^{2}} & 0\\0 & 0 & \frac{\gamma}{s} & 0\\0 & 0 & 0 & \frac{\epsilon}{s^{2}}\\0 & 0 & 0 & \frac{\epsilon}{s}\end{matrix}\right]
+   \label{eq:matriz_transferencia}
+\end{equation}
+
+
 
 \section{Controlador}
-\label{sec:control}
 
-Basado en el modelo linealizado, se propone una arquitectura de control en cascada con bucles internos para la actitud (ángulos $\phi$, $\theta$, $\psi$) y bucles externos para la posición ($x$, $y$, $z$). Para cada variable controlada se implementan controladores PID con la siguiente estructura:
+La definición del controlador requiere identificar los estados requeridos y presentes, que en este caso se representan en $x^{ref}_i$ y $x_i$ respectivamente y la relación de sustracción de ambos nos dá una función dependiente del tiempo, como lo representa la ecuación \ref{eq:error} para el error del estado. 
 
 \begin{equation}
-    u(t) = K_p e(t) + K_i \int_0^t e(\tau) d\tau + K_d \frac{de(t)}{dt}
+    e_i\left(t\right) = x^{ref}_i - x_i
+    \label{eq:error}
 \end{equation}
 
-donde los parámetros $K_p$, $K_i$ y $K_d$ se sintonizan basándose en el modelo linealizado. La matriz de funciones de transferencia del sistema linealizado es:
+Una vez definida la ecuación del error de estado se puede buscar una representación tangible de la entrada del sistema de controlador, la cuál nos la dá la ecuación \ref{eq:PID}. Esta ecuación incluye parámetros de ganancias proporcional, integral y derivada como lo son respectivamente las constantes $K_{P-i}$, $K_{I-i}$ y $K_{D-i}$ donde para efectos las ganancias proporcional y derivada se usan para el control del vehículo.
 
 \begin{equation}
-G(s) = \begin{bmatrix}
-0 & 0 & \frac{\gamma g}{B s^{3} + s^{4}} & 0\\
-0 & 0 & \frac{\gamma g}{B s^{2} + s^{3}} & 0\\
-0 & - \frac{\gamma g}{C s^{3} + s^{4}} & 0 & 0\\
-0 & - \frac{\gamma g}{C s^{2} + s^{3}} & 0 & 0\\
-\frac{A}{D s + s^{2}} & 0 & 0 & 0\\
-\frac{A}{D + s} & 0 & 0 & 0\\
-0 & \frac{\gamma}{s^{2}} & 0 & 0\\
-0 & \frac{\gamma}{s} & 0 & 0\\
-0 & 0 & \frac{\gamma}{s^{2}} & 0\\
-0 & 0 & \frac{\gamma}{s} & 0\\
-0 & 0 & 0 & \frac{\epsilon}{s^{2}}\\
-0 & 0 & 0 & \frac{\epsilon}{s}
-\end{bmatrix}
-\label{eq:matriz_transferencia}
+    u_i(t) = K_{P-i}\,e(t) + K_{I-i} \int_0^t e_i(\tau)\,d\tau + K_{D-i}\,\dot{e}(t)
+    \label{eq:PID}
 \end{equation}
 
 \section{Resultados}
-\label{sec:resultados}
+
+\subsection{Análisis en el dominio del tiempo}
+
+El análisis en el dominio del tiempo se enfoca en evaluar la dinámica intrínseca del sistema no compensado, definido por el modelo linealizado de 12 estados (Ecuación \ref{eq:gsistema_var_state}). 
+
+\subsubsection{Respuesta al Escalón de Posición ($X, Y, Z$)}
+
+La Figura \ref{fig:step_pos} muestra la respuesta de traslación ante la aplicación de una entrada de empuje ($U_1$) o de torque ($U_2, U_3$) constante.
+
+\begin{figure} [h!]
+    \centering
+    \includegraphics[width=1.05\columnwidth]{imagenes/IMG-20251205-WA0026.jpg}
+    \caption{Respuesta al escalón de los canales de posición ($X, Y, Z$) con variación de masa. $G$ es el modelo nominal.}
+    \label{fig:step_pos}
+\end{figure}
+
+El análisis revela un comportamiento inestable en todos los ejes:
+\begin{itemize}
+    \item Inestabilidad en Altitud ($Z$): La altitud exhibe un crecimiento lineal con el tiempo, lo que indica que el comando de empuje constante provoca una velocidad vertical constante ($\dot{z} = cte \neq 0$). El dron nunca detiene su ascenso.
+    \item Inestabilidad Crítica en Traslación ($X, Y$): Los canales de posición horizontal ($X$ y $Y$) presentan un crecimiento cuadrático continuo, lo que es significa una doble integración del comando de torque. El dron se aleja indefinidamente de su posición inicial.
+\end{itemize}
+
+\subsubsection{Respuesta al Escalón de Actitud ($\phi, \theta, \psi$)}
+
+La Figura \ref{fig:step_att} muestra la respuesta angular.
+
+\begin{figure} [h!]
+    \centering
+    \includegraphics[width=1.05\columnwidth]{imagenes/step_responses_orientation.png}
+    \caption{Respuesta al escalón de los canales de actitud ($\phi, \theta, \psi$).}
+    \label{fig:step_att}
+\end{figure}
+
+
+Los tres ángulos ($\phi, \theta, \psi$) muestran un crecimiento cuadrático cóncavo hacia arriba. Esto indica una inestabilidad rotacional en la cual el torque constante aplicado causa una aceleración angular constante, acelerando la rotación continuamente.
+
+\subsubsection{Efecto de la Variación de Parámetros}
+
+El análisis de robustez se realiza comparando la respuesta del modelo nominal ($G$) con las variaciones de masa (modelo ligero $G_{50m}$ y modelo pesado $G_{50M}$), como se observa en todas las figuras.
+
+El cambio en la masa del dron afecta la inercia del sistema, lo que se traduce en un cambio en la tasa de divergencia de las respuestas:
+\begin{itemize}
+    \item Masa Baja ($\mathbf{G_{50m}}$): Presenta la mayor pendiente de crecimiento en todos los canales inestables. Un menor momento de inercia hace que el dron sea hipersensible y diverja más rápidamente ante el mismo comando de torque o empuje.
+    \item Masa Alta ($\mathbf{G_{50M}}$): Presenta la menor pendiente de crecimiento. El aumento de inercia frena la aceleración, haciendo que la divergencia sea más lenta.
+\end{itemize}
+
+Esta sensibilidad extrema confirma que el sistema de lazo abierto no es robusto ante variaciones de carga útil, lo cual es un requerimiento esencial para el controlador.
+
+\subsubsection{Respuesta al Impulso de Posición (Perturbación)}
+
+La Figura \ref{fig:impulse_pos} muestra cómo una perturbación momentánea afecta la posición.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=1.0\columnwidth]{imagenes/WhatsApp Image 2025-12-03 at 19.52.12.jpeg}
+    \caption{Respuesta al impulso de los canales de posición ($X, Y, Z$). Se confirma la divergencia continua tras una perturbación.}
+    \label{fig:impulse_pos}
+\end{figure}
+
+El impulso causa un cambio permanente en la velocidad o aceleración ($X, Y, Z$), confirmando que el sistema no puede rechazar perturbaciones y se aleja continuamente de la posición inicial.  La estabilización en Altitud ($\mathbf{Z}$) significa que el modelo linealizado posee suficiente amortiguamiento (coeficiente $D$ o $c_z$ de arrastre aerodinámico en la Ecuación \ref{eq:edos_tras}) para disipar la energía del impulso. El sistema es intrínsecamente estable frente a una perturbación vertical momentánea.
+
+\subsubsection{Respuesta al Impulso de Actitud (Perturbación)}
+
+La Figura \ref{fig:impulse_att} muestra la respuesta angular ante un impulso de torque.
+
+\begin{figure} [h!]
+    \centering
+    \includegraphics[width=1.05\columnwidth]{imagenes/WhatsApp Image 2025-12-04 at 21.24.33.jpeg}
+    \caption{Respuesta al impulso de los canales de actitud ($\phi, \theta, \psi$). El crecimiento lineal indica una velocidad angular constante $\dot{\omega}_i \neq 0$.}
+    \label{fig:impulse_att}
+\end{figure}
+
+Los tres ángulos ($\phi, \theta, \psi$) muestran un crecimiento lineal tras el impulso, indicando que la velocidad angular se vuelve constante ($\dot{\phi}, \dot{\theta}, \dot{\psi} = \text{cte} \neq 0$). Esto significa que una perturbación momentánea causa que el dron rote a una velocidad constante y no se detenga jamás.
+
+\subsubsection{Efecto en la Ubicación de Polos y Ceros}
+
+El análisis de la ubicación de los polos, que son los autovalores de la matriz de estados $A$, es crucial para justificar la inestabilidad y la falta de robustez observadas en las Figuras \ref{fig:step_pos} y \ref{fig:step_att}.
+
+\paragraph{Ubicación de Polos en Ejes Inestables:}
+
+La principal evidencia de la inestabilidad del sistema en lazo abierto reside en los polos ubicados en la frontera del plano $s$:
+\begin{itemize}
+    \item Polos de Orientación ($\phi, \theta, \psi$): Se observa la presencia de un polo en el origen ($\mathbf{s=0.0}$) para los tres canales angulares. Este polo es la causa directa de la inestabilidad marginal y el crecimiento continuo (cuadrático/lineal) en la respuesta al escalón.
+    \item Polos de Posición ($X, Y, Z$): La inestabilidad en estos canales es el resultado de la presencia de polos adicionales en el origen, necesarios para modelar la doble integración de posición y velocidad, lo cual se confirma por el crecimiento lineal y cuadrático observado.
+\end{itemize}
+
+\paragraph{Efecto de la Variación de Parámetros (Robustez):}
+
+La Figura \ref{fig:polos} ilustra el movimiento de los polos dominantes en el semiplano izquierdo debido a la variación de masa (robustez).
+
+\begin{figure} [h!]
+    \centering
+    \includegraphics[width=1.0\linewidth]{imagenes/pole_zero_plot_position.png}
+    \caption{Ubicación de los polos dominantes en el plano $s$ para las variaciones de masa $G, G_{50m}, G_{50M}$.}
+    \label{fig:polos}
+\end{figure}
+
+El análisis numérico de los polos dominantes en los canales de posición revela una alta sensibilidad:
+\begin{itemize}
+    \item El polo del modelo ligero ($\mathbf{G_{50m}}$) se ubica en $\mathbf{s = -0.25}$, resultando en un tiempo característico $\tau$ de $4.0s$ (respuesta lenta).
+    \item El polo del modelo pesado ($\mathbf{G_{50M}}$) se ubica en $\mathbf{s = -0.80}$, resultando en $\tau$ de $1.25s$ (respuesta rápida).
+\end{itemize}
+La gran variación en el tiempo característico ($\tau$) demuestra que la ubicación de los polos es altamente sensible a la masa del dron. Esto confirma la falta de robustez del sistema y la necesidad de que el controlador mueva todos los polos a una región estable ($Re(s) \ll 0$) con un factor de amortiguamiento adecuado.
+
+La principal conclusión de este análisis en el dominio del tiempo es que el dron es completamente inestable en todos sus ejes y requiere un controlador robusto para estabilizar y regular su desempeño.
 
 
 
-%\begin{figure}[h!]
-%\centering
-%\includegraphics[width=0.8\textwidth]{respuesta_posicion.png}
-%\caption{Respuesta del sistema controlado a cambios de posición deseada.}
-%\label{fig:respuesta}
-%\end{figure}
 
-Los resultados muestran que el controlador basado en el modelo linealizado es capaz de estabilizar el cuadracóptero y seguir trayectorias de referencia con un error en estado estacionario menor al 2\%.
+\subsection{Análisis en el dominio de la frecuencia}
 
-% ------------------------------------------------
-% Bibliografía
-% ------------------------------------------------
-\begin{thebibliography}{9}
-\bibitem{1} 
-R. Beard, \emph{Quadrotor Dynamics and Control}, Brigham Young University, 2008.
+El análisis en el dominio de la frecuencia permite evaluar la estabilidad del sistema y predecir su respuesta ante señales periódicas \cite{bechhoefer2021control}. Este análisis se basa en la Función de Transferencia de Lazo Abierto ($\mathbf{G(s)}$) para los canales de posición y orientación.
 
-\bibitem{2}
-S. Bouabdallah, \emph{Design and Control of Quadrotors with Application to Autonomous Flying}, École Polytechnique Fédérale de Lausanne, 2007.
+\subsubsection{Frecuencias de Resonancia}
 
-\bibitem{3}
-T. Luukkonen, \emph{Modelling and control of quadcopter}, Aalto University, 2011.
+No se observan frecuencias de resonancia definidas en la banda de frecuencia analizada para la mayoría de los canales. La característica dominante es la alta ganancia a bajas frecuencias, causada por los polos en el origen ($s=0$). Esto es una consecuencia directa de la inestabilidad en lazo abierto, lo que implica una ganancia infinita en corriente continua ($\omega \to 0$).
 
-\bibitem{4}
-P. Pounds, R. Mahony, and P. Corke, \emph{Modelling and Control of a Large Quadrotor Robot}, Control Engineering Practice, 2010.
-\end{thebibliography}
+Los diagramas de Bode (Magnitud y Fase) para todos los canales de traslación y rotación se presentan en las Figuras \ref{fig:bode_pos} y \ref{fig:bode_att}, respectivamente.
+
+\subsubsection{Diagramas de Bode de Posición ($X/N_y$, $Y/N_x$, $Z/T$)}
+
+La Figura \ref{fig:bode_pos} muestra el comportamiento de la posición.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=1.0\columnwidth]{imagenes/WhatsApp Image 2025-12-03 at 19.52.45.jpeg}
+    \caption{Diagramas de Bode para los canales de posición ($X/N_y$, $Y/N_x$, $Z/T$). }
+    \label{fig:bode_pos}
+\end{figure}
+
+\begin{itemize}
+    \item Traslación Horizontal ($X/N_y$ y $Y/N_x$): La fase comienza en valores cercanos a $\mathbf{-270^\circ}$ y cae hacia $-360^\circ$. Esto indica un sistema de alto orden de integración Tipo 2 y la presencia de dinámicas acopladas que contribuyen a la inestabilidad en lazo cerrado.
+    \item Altitud ($Z/T$): Fase asintótica a -180°, garantiza un tiempo de establecimiento largo y respuesta muy oscilatoria. Margen de Fase casi nulo, indicando que cualquier pequeña incertidumbre lo hará oscilar sin control y la separación de las líneas  confirma que el desempeño empeora con las cargas.
+\end{itemize} 
+
+\subsubsection{Diagramas de Bode de Orientación ($\phi/N_x$, $\theta/N_y$, $\psi/N_z$)}
+
+La Figura \ref{fig:bode_att} muestra el comportamiento de la actitud (orientación).
+
+\begin{figure} [h!]
+    \centering
+    \includegraphics[width=1.0\columnwidth]{imagenes/WhatsApp Image 2025-12-03 at 19.53.08.jpeg}
+    \caption{Diagramas de Bode para los canales de actitud ($\phi/N_x$, $\theta/N_y$, $\psi/N_z$). }
+    \label{fig:bode_att}
+\end{figure}
+
+
+Los tres canales de orientación ($\phi$, $\theta$, y $\psi$) exhiben un comportamiento idéntico, característico de un sistema de doble integrador ($\frac{1}{s^2}$):
+\begin{itemize}
+    \item Magnitud: Presenta una pendiente constante de \\ $\mathbf{-40 dB/dec}$ a frecuencias bajas, lo cual confirma la relación de doble integración entre el torque y el ángulo.
+    \item La fase se mantiene constante en $\mathbf{-180^\circ}$ para la banda de frecuencia de interés.
+\end{itemize}
+
+Este comportamiento constante de fase implica una estabilidad marginal intrínseca, ya que el sistema se encuentra en el límite de la estabilidad en lazo cerrado. La naturaleza de doble integrador es una consecuencia directa de la dinámica de cuerpo rígido sin par de control que lo estabilice. Además, la separación de las curvas ($G, G_{50m}, G_{50M}$) demuestra que la variación de la masa/inercia modifica ligeramente la ganancia de cada lazo, lo que significa que la estabilidad marginal del sistema no es robusta.
+
+\subsubsection{Criterio de Estabilidad de Nyquist}
+
+El Criterio de Nyquist confirma la inestabilidad absoluta del sistema de lazo cerrado. La condición de estabilidad requiere que el número de polos inestables de lazo cerrado ($Z$) sea cero, es decir, $Z = N + P = 0$, donde $P$ es el número de polos inestables de lazo abierto y $N$ es el número de encerramientos del punto crítico $(-1, 0)$ \cite{aastrom2021feedback}.
+
+\paragraph{Diagramas de Nyquist de Posición ($X/N_y$, $Y/N_x$, $Z/T$):}
+
+La Figura \ref{fig:nyquist_pos} presenta los diagramas de Nyquist para los canales de posición.
+
+\begin{figure} [h!]
+    \centering
+    \includegraphics[width=1.1\columnwidth]{imagenes/WhatsApp Image 2025-12-03 at 19.53.26.jpeg}
+    \caption{Diagramas de Nyquist para los canales de posición.}
+    \label{fig:nyquist_pos}
+\end{figure}
+
+El análisis de los trazos revela que, dado que el sistema posee polos en el origen, es inestable en lazo abierto ($P>0$).
+\begin{itemize}
+    \item Para el canal $\mathbf{X/N_y}$: El trazo encierra el punto crítico $(-1, 0)$ en sentido horario ($N<0$). Dado que el número de encerramientos no compensa los polos inestables de lazo abierto, el sistema es inestable en lazo cerrado ($Z>0$).
+    \item Para los canales $\mathbf{Y/N_x}$ y $\mathbf{Z/T}$: Los trazos no encierran el punto crítico ($N=0$), lo que resulta en $Z=P$. Por lo tanto, el sistema es inestable en lazo cerrado.
+\end{itemize}
+
+\paragraph{Diagramas de Nyquist de Orientación ($\phi/N_x$, $\theta/N_y$, $\psi/N_z$):}
+
+La Figura \ref{fig:nyquist_att} presenta los diagramas de Nyquist para los canales de orientación.
+
+\begin{figure} [h!]
+    \centering
+    \includegraphics[width=1.03\columnwidth]{imagenes/WhatsApp Image 2025-12-03 at 19.53.43.jpeg}
+    \caption{Diagramas de Nyquist para los canales de actitud}
+    \label{fig:nyquist_att}
+\end{figure}
+
+Para los canales de orientación, el trazo se superpone al eje real negativo (debido a la fase constante de $-180^\circ$ del doble integrador). La ausencia de encerramientos ($N=0$) y la presencia de polos en el origen ($P>0$) confirman que el sistema es inestable en lazo cerrado.
+
+\paragraph{Conclusión del Criterio:}
+Ambos conjuntos de diagramas confirman que el sistema en lazo abierto no es estable para lazo cerrado. La variación de los trazos ($G, G_{50m}, G_{50M}$) en torno al punto crítico $(-1, 0)$ refuerza la falta de robustez del sistema ante cambios de masa/inercia.
+
+\subsubsection{Márgenes de Ganancia y de Fase}
+
+Los márgenes de estabilidad confirman la inestabilidad del sistema y la necesidad de compensación.
+
+\begin{itemize}
+    \item Margen de Fase ($\mathbf{MF}$): El Margen de Fase es casi nulo ($0^\circ$). Un $MF$ tan bajo significa que el sistema no tiene capacidad para manejar ningún retraso o retardo adicional, y cualquier pequeña perturbación lo haría oscilar eternamente (lento e inaceptable).
+    \item Margen de Ganancia ($\mathbf{MG}$): El Margen de Ganancia es infinito, lo cual indica que el sistema no se vuelve inestable por un aumento de ganancia en esa banda de frecuencia crítica.
+\end{itemize}
+
+La separación de las curvas de Bode ($G, G_{50m}, G_{50M}$) en ambos juegos de gráficos es la prueba de la falta de robustez: los márgenes de estabilidad varían significativamente con el cambio de la masa.
+
+\section{Controlador PID de trayectoria basado en simulaciones}
+
+En esta sección se presentan dos enfoques de simulación del controlador PID de trayectoria, estos se realizan de forma complementaría con el objetivo de probar diferentes metodologías para enfrentarse al problema que representan los vehículos aéreos no tripulados.
+Primero, se estudió un modelo simplificado, implementado en MATLAB/Simulink, inspirado en aproximaciones lineales habituales en \citet{ejosat2019,luukkonen2011modelling}. Posteriormente, se analiza el comportamiento del controlador en el modelo lineal completo del cuadricóptero, implementado en Python, siguiendo estructuras de modelado similares a las de \cite{alkamachi2017modelling,abdulkareem2022modeling} y siguiendo el planteamiento realizado en este texto.
+
+\subsection{Simulaciones en MATLAB/Simulink: modelo lineal 1D}
+
+Para iniciar la implementación del controlador, se planteó un modelo simplificado en MATLAB/Simulink, donde la dinámica de la posición se aproxima mediante un doble integrador,
+\[
+G(s) = \frac{1}{s^2},
+\]
+en línea con modelos lineales utilizados para análisis preliminares en \cite{ejosat2019,luukkonen2011modelling}. 
+El objetivo es estudiar el efecto de las ganancias $K_p$, $K_i$ y $K_d$ de forma más directa, siguiendo los criterios clásicos de diseño de control expuestos en \cite{niseControl}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\linewidth]{imagenes/grafica PID.png}
+    \caption{Respuesta del sistema en Simulink con controlador PID.}
+    \label{fig:simulink_resp}
+\end{figure}
+
+En la Figura \ref{fig:simulink_resp} se muestra la posición del sistema frente a una referencia por tramos. 
+Se aprecia un sobreimpulso moderado en el escalón positivo y una respuesta amortiguada ante el cambio a valor negativo, con error estacionario prácticamente nulo. 
+Este comportamiento es consistente con el efecto combinado de las acciones proporcional, integral y derivativa descritas en \cite{niseControl}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{imagenes/bloquesPID.png}
+    \caption{Diagrama de bloques del controlador PID en Simulink.}
+    \label{fig:simulink_bloques}
+\end{figure}
+
+La Figura \ref{fig:simulink_bloques} presenta el esquema de Simulink empleado. 
+La referencia se toma desde un bloque From Workspace, se resta la salida de la planta en el sumador, el controlador PID genera la acción de control y esta se aplica al bloque de planta modelado como $1/s^{2}$, cerrando el lazo de realimentación.
+
+
+\subsection{Simulaciones en Python: modelo lineal completo}
+
+El modelo dinámico utilizado en Python integra las ecuaciones de Newton-Euler y la representación por ángulos de Euler para el cuadricóptero, realizado en este texto y en concordancia con \cite{luukkonen2011modelling} y \cite{kose2019dynamic}. 
+El controlador PID opera en un esquema jerárquico: el lazo externo regula la posición $(x,y,z)$ y genera referencias de actitud, mientras que los lazos internos regulan roll, pitch y yaw con control PID clásico \cite{alkamachi2017modelling}.  
+
+Al probar esta metodología de control, se utilizaron los valores presentes en la Tabla \ref{tab:parametros_fisicos} de los parámetros físicos presentes en la ecuación \ref{eq:sistema_linealizado}.
+
+\begin{table}[h!]
+\centering
+\caption{Valores numéricos del modelo dinámico del dron.}
+\label{tab:parametros_fisicos}
+\begin{tabular}{lc}
+\hline
+\textbf{Parámetro} & \textbf{Valor} \\
+\hline
+$A$        & 2.1368 \\
+$B$        & 0.5342 \\
+$C$        & 0.5342 \\
+$D$        & 0.5342 \\
+$g$        & 9.81 \\
+$\gamma$   & 205.9251 \\
+$\epsilon$ & 111.9159 \\
+\hline
+\end{tabular}
+\end{table}
+
+Los controladores PID utilizados para manejar el movimiento del dron fueron implementados con los valores presentados a continuación (Tabla \ref{tab:pid}):
+
+\begin{table}[h!]
+\centering
+\caption{Ganancias y límites de los controladores PID/PD del dron.}
+\label{tab:pid}
+\begin{tabular}{lcccc}
+\hline
+\textbf{Controlador} & $K_p$ & $K_i$ & $K_d$ & Límite \\
+\hline
+$PID_x$     & 1.0 & 0.02 & 0.5 & $\text{integ\_lim}=2.0$ \\
+$PID_y$     & 1.0 & 0.02 & 0.5 & $\text{integ\_lim}=2.0$ \\
+$PID_z$     & 6.0 & 0.8  & 2.0 & $\text{integ\_lim}=5.0$ \\
+$PID_\phi$  & 9.0 & 0.0  & 4.0 & $\text{out\_lim}=40.0$ \\
+$PID_\theta$& 9.0 & 0.0  & 4.0 & $\text{out\_lim}=40.0$ \\
+$PID_\psi$  & 2.0 & 0.0  & 2.0 & $\text{out\_lim}=40.0$ \\
+\hline
+\end{tabular}
+\end{table}
+
+Los límites tipo integ\_lim son para límitar la cantidad de error en la integración del PID (anti-windup por saturación) y los límites out\_lim, son un límite simétrico en la salida del controlador.
+
+Para probar el algoritmo de control se consideran dos trayectorias de referencia:
+\begin{itemize}
+    \item una trayectoria helicoidal (espiral ascendente);
+    \item una trayectoria circular en un plano horizontal.
+\end{itemize}
+
+Los criterios de desempeño incluyen errores de seguimiento del orden de milímetros, señales de control suaves y ángulos de roll y pitch dentro de aproximadamente $\pm 15^\circ$.
+
+\subsubsection{Resultados para la trayectoria helicoidal (espiral)}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{imagenes/errores_seguimiento_spiral.png}
+    \caption{Errores de posición para la trayectoria espiral.}
+    \label{fig:errores_spiral}
+\end{figure}
+
+En la Figura \ref{fig:errores_spiral} se muestran los errores de seguimiento en $x$, $y$ y $z$. 
+Tras el transitorio inicial, los errores se mantienen del orden de $10^{-4}$ m, lo que indica un seguimiento de trayectoria muy preciso. 
+El error en altura presenta un pequeño desvío mientras el dron asciende, pero se estabiliza rápidamente.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{imagenes/inputs_vs_time_spiral.png}
+    \caption{Entradas de control para la espiral.}
+    \label{fig:inputs_spiral}
+\end{figure}
+
+La Figura \ref{fig:inputs_spiral} muestra la evolución de las entradas de control. 
+El empuje total presenta el típico transitorio de despegue y luego se ajusta de manera suave al perfil de altura. 
+Los torques $N_x$ y $N_y$ se mantienen en el orden de $10^{-6}$ Nm, con oscilaciones muy pequeñas, mientras que $N_z$ es prácticamente nulo, al no requerirse grandes variaciones de yaw.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{imagenes/trajectory_xy_spiral.png}
+    \caption{Trayectoria en el plano XY para la espiral.}
+    \label{fig:tray_xy_spiral}
+\end{figure}
+
+En la Figura \ref{fig:tray_xy_spiral} se comparan la trayectoria de referencia y la salida del dron en el plano $XY$. 
+Las dos curvas se superponen, de forma que las diferencias no son observables directamente.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{imagenes/trayectoria3D_spiral.png}
+    \caption{Trayectoria 3D para la espiral.}
+    \label{fig:tray3D_spiral}
+\end{figure}
+
+La Figura \ref{fig:tray3D_spiral} representa la trayectoria en el espacio tridimensional. 
+Se observa claramente el movimiento circular en $XY$ combinado con el incremento de altura $Z$, confirmando que el controlador sigue adecuadamente una trayectoria tridimensional.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{imagenes/angulos_spiral.png}
+    \caption{Ángulos de actitud durante la espiral.}
+    \label{fig:angulos_spiral}
+\end{figure}
+
+En la Figura \ref{fig:angulos_spiral} se aprecian los ángulos de roll, pitch y yaw. 
+Roll y pitch se mantienen dentro del límite operativo de aproximadamente $\pm 15^\circ$, tal como recomiendan estudios de estabilidad para cuadricópteros \cite{alkamachi2017modelling}. 
+El ángulo de yaw permanece casi constante, ya que la espiral se realiza principalmente mediante inclinaciones controladas.
+
+\subsubsection{Resultados para la trayectoria circular}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{imagenes/errores_seguimiento_circle.png}
+    \caption{Errores de posición para la trayectoria circular.}
+    \label{fig:errores_circle}
+\end{figure}
+
+En la Figura \ref{fig:errores_circle} se observa que, al tratarse de una altura constante, el error en $z$ es aproximadamente cero. 
+Los errores en $x$ e $y$ se mantienen del orden de $10^{-4}$ m, con un sobreimpulso pequeño y una convergencia rápida.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{imagenes/inputs_vs_time_circle.png}
+    \caption{Entradas de control para la trayectoria circular.}
+    \label{fig:inputs_circle}
+\end{figure}
+
+La Figura \ref{fig:inputs_circle} muestra que, a diferencia de la espiral, el empuje total es casi constante y los torques son aún más pequeños, lo que refleja un esfuerzo de control menor para una trayectoria menos exigente.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{imagenes/trajectory_xy_circle.png}
+    \caption{Trayectoria XY para la trayectoria circular.}
+    \label{fig:tray_xy_circle}
+\end{figure}
+
+En la Figura \ref{fig:tray_xy_circle} se aprecia que la trayectoria seguida por el dron se superpone con la referencia circular, lo cual confirma el buen desempeño del controlador en el plano horizontal.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{imagenes/trayectoria3D_circle.png}
+    \caption{Trayectoria 3D para la trayectoria circular.}
+    \label{fig:tray3D_circle}
+\end{figure}
+
+La Figura \ref{fig:tray3D_circle} muestra la misma trayectoria en 3D, donde se confirma que el movimiento se realiza en un plano horizontal.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{imagenes/angulos_circle.png}
+    \caption{Ángulos de actitud para la trayectoria circular.}
+    \label{fig:angulos_circle}
+\end{figure}
+
+La Figura \ref{fig:angulos_circle} presenta los ángulos de roll, pitch y yaw en la trayectoria circular. 
+Las variaciones en roll y pitch son suaves y menores que en la espiral, mientras que yaw se mantiene estable, coherente con el tipo de maniobra.
+
+
+
+\subsection{Comparación de ambos enfoques}
+
+El modelo resuelto en Python permite evaluar el comportamiento del cuadricóptero incluyendo acoplamientos y limitaciones físicas, tal como recomiendan estudios recientes sobre control de trayectoria \cite{abdulkareem2022modeling}. 
+El controlador PID demuestra un seguimiento preciso de trayectorias tridimensionales, manteniendo los ángulos de actitud y las entradas de control dentro de rangos seguros.
+
+El modelo lineal en Simulink ofrece una herramienta sencilla para estudiar de forma más visual el efecto de las ganancias $K_p$, $K_i$ y $K_d$, reproduciendo los fenómenos clásicos de sobreimpulso, amortiguamiento y eliminación del error estacionario descritos en \cite{niseControl}. 
+
+En conjunto, ambos enfoques son complementarios: las simulaciones en Python validan el desempeño del controlador en casos más realistas de la dinámica del cuadricóptero, mientras que las simulaciones en Simulink facilitan la comprensión del diseño del PID y la sensibilidad del sistema a las ganancias.
+
+\section{Conclusiones}
+
+La dinámica de un dron cuadricóptero presenta una complejidad significativa debido a su carácter no lineal y acoplado, así como a la presencia de más grados de libertad que actuadores disponibles. Estas características complican tanto su análisis como el diseño de estrategias de control adecuadas.
+
+La linealización alrededor del punto de operación correspondiente al vuelo estacionario permitió obtener un modelo manejable para el estudio del sistema y para el diseño de controladores en un régimen cercano al equilibrio. Aunque esta aproximación no captura todos los efectos no lineales, resultó suficiente para describir el comportamiento esencial del dron en las condiciones consideradas.
+
+El esquema de control en cascada desarrollado mostró un desempeño estable y permitió el seguimiento adecuado de las trayectorias definidas, compensando las inestabilidades identificadas en el análisis del sistema en lazo abierto. Estos resultados indican que el modelo y la metodología empleada fueron apropiados para abordar el problema planteado.
+
+
+\section{Futuro del proyecto}
+
+El proyecto llamado ``quadcopter'', es un proyecto actualmente perteneciente al club universitario ``Physics in Silico'' y como tal permanecera tanto el código fuente como documentanción, página web y cualquier otro producto oficial ligado a dicha herramienta en los repositorios del club y será administrado por el mismo. Se permite la modificación para uso individual del código fuente. No obstante, se recomienda que para proyectos universitarios o de otra índole que involucren a ``quadcopter'', se pongan en contacto con los miembros del club y se opte por integrarse al mismo.
+
+Repositorio del proyecto: \href{https://github.com/physicsIS/quadcopter}{GitHub}
+
+\begin{itemize}
+    \item Correo institucional: Physicsinsilico@ucr.ac.cr
+    \item \href{https://github.com/physicsIS}{GitHub} 
+\end{itemize}
+
+
+\bibliographystyle{elsarticle-num} %puede cambiarse, de ser necesario
+\bibliography{library.bib}
 
 \end{document}

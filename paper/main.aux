@@ -5,44 +5,156 @@
 \catcode `<\active 
 \catcode `>\active 
 \@nameuse{es@quoting}
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\emailauthor{elmer.barquero@ucr.ac.cr}{Elmer Hernán Barquero Chaves\corref {cor1}}
+\emailauthor{andres.mesen@ucr.ac.cr}{Andrés Mesén}
+\emailauthor{steven.zuniga@ucr.ac.cr}{Steven Zuñiga}
+\emailauthor{dylan.vargas@ucr.ac.cr}{Dylan Vargas}
+\citation{patrick2020effective}
+\Newlabel{mymainaddress}{a}
 \babel@aux{spanish}{}
-\@writefile{toc}{\contentsline {section}{\numberline {I}Introducción}{1}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {II}Modelo Matemático}{1}{}\protected@file@percent }
-\newlabel{sec:modelo}{{II}{1}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {A}Sistema de coordenadas y variables de estado}{1}{}\protected@file@percent }
-\newlabel{eq:pos_cm}{{1}{1}{}{}{}}
-\newlabel{eq:orientacion}{{2}{1}{}{}{}}
-\newlabel{eq:transformacion_galileana}{{3}{1}{}{}{}}
-\newlabel{eq:matriz_rotacion}{{4}{1}{}{}{}}
-\newlabel{eq:matriz_rotacion_x}{{5}{1}{}{}{}}
-\newlabel{eq:matriz_rotacion_y}{{6}{1}{}{}{}}
-\newlabel{eq:matriz_rotacion_z}{{7}{1}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {B}Relación entre velocidades angulares}{1}{}\protected@file@percent }
-\newlabel{eq:omega_a_eta}{{8}{1}{}{}{}}
-\newlabel{eq:W}{{9}{1}{}{}{}}
-\newlabel{eq:W_inv}{{10}{1}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {C}Fuerzas y momentos}{2}{}\protected@file@percent }
-\newlabel{eq:fuerzas}{{11}{2}{}{}{}}
-\newlabel{eq:torques}{{12}{2}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {D}Ecuaciones de movimiento}{2}{}\protected@file@percent }
-\newlabel{eq:segunda_ley}{{13}{2}{}{}{}}
-\newlabel{eq:Segunda_ley_rot}{{14}{2}{}{}{}}
-\newlabel{eq:eq_euler}{{15}{2}{}{}{}}
-\newlabel{eq:edos_rot}{{16}{2}{}{}{}}
-\newlabel{eq:edos_tras}{{17}{2}{}{}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {E}Linealización del modelo}{2}{}\protected@file@percent }
-\newlabel{eq:sustituciones}{{18}{2}{}{}{}}
-\newlabel{eq:sistema_linealizado}{{19}{2}{}{}{}}
-\bibcite{1}{{1}{}{{}}{{}}}
-\bibcite{2}{{2}{}{{}}{{}}}
-\bibcite{3}{{3}{}{{}}{{}}}
-\bibcite{4}{{4}{}{{}}{{}}}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introducción}{1}{section.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Representación del dron cuadracóptero.}}{1}{figure.1}\protected@file@percent }
+\newlabel{fig:dron}{{1}{1}{Representación del dron cuadracóptero}{figure.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Modelo Matemático}{1}{section.2}\protected@file@percent }
+\citation{luukkonen2011modelling}
+\newlabel{eq:pos_cm}{{1}{2}{Modelo Matemático}{equation.2.1}{}}
+\newlabel{eq:orientacion}{{2}{2}{Modelo Matemático}{equation.2.2}{}}
+\newlabel{eq:transformacion_galileana}{{3}{2}{Modelo Matemático}{equation.2.3}{}}
+\newlabel{eq:matriz_rotacion}{{4}{2}{Modelo Matemático}{equation.2.4}{}}
+\newlabel{eq:matriz_rotacion_x}{{5}{2}{Modelo Matemático}{equation.2.5}{}}
+\newlabel{eq:matriz_rotacion_y}{{6}{2}{Modelo Matemático}{equation.2.6}{}}
+\newlabel{eq:matriz_rotacion_z}{{7}{2}{Modelo Matemático}{equation.2.7}{}}
+\newlabel{eq:omega_a_eta}{{8}{2}{Modelo Matemático}{equation.2.8}{}}
+\newlabel{eq:W}{{9}{2}{Modelo Matemático}{equation.2.9}{}}
+\newlabel{eq:W_inv}{{10}{2}{Modelo Matemático}{equation.2.10}{}}
+\newlabel{eq:fuerzas}{{11}{2}{Modelo Matemático}{equation.2.11}{}}
+\newlabel{eq:segunda_ley}{{12}{2}{Modelo Matemático}{equation.2.12}{}}
+\newlabel{eq:Segunda_ley_rot}{{13}{2}{Modelo Matemático}{equation.2.13}{}}
+\newlabel{eq:torques}{{14}{2}{Modelo Matemático}{equation.2.14}{}}
+\newlabel{eq:eq_euler}{{15}{2}{Modelo Matemático}{equation.2.15}{}}
+\newlabel{eq:edos_rot}{{16}{2}{Modelo Matemático}{equation.2.16}{}}
+\citation{alkamachi2017modelling}
+\citation{cengiz2024quadcopter}
+\citation{abdulkareem2022modeling}
+\citation{bechhoefer2021control}
+\newlabel{eq:edos_tras}{{17}{3}{Modelo Matemático}{equation.2.17}{}}
+\newlabel{eq:sustituciones}{{18}{3}{Modelo Matemático}{equation.2.18}{}}
+\newlabel{eq:control_sin_linealizar}{{19}{3}{Modelo Matemático}{equation.2.19}{}}
+\newlabel{eq:sistema_no_lineal}{{20}{3}{Modelo Matemático}{equation.2.20}{}}
+\newlabel{eq:state_vector}{{21}{3}{Modelo Matemático}{equation.2.21}{}}
+\newlabel{eq:odes_primer_orden_no_linealizado}{{22}{3}{Modelo Matemático}{equation.2.22}{}}
+\newlabel{eq:state_equi}{{23}{3}{Modelo Matemático}{equation.2.23}{}}
+\newlabel{eq:gsistema_var_state}{{24}{4}{Modelo Matemático}{equation.2.24}{}}
+\newlabel{eq:linearizacion}{{25}{4}{Modelo Matemático}{equation.2.25}{}}
+\newlabel{eq:matriz_A}{{26}{4}{Modelo Matemático}{equation.2.26}{}}
+\newlabel{eq:matriz_B}{{27}{4}{Modelo Matemático}{equation.2.27}{}}
+\newlabel{eq:sistema_linealizado}{{28}{4}{Modelo Matemático}{equation.2.28}{}}
+\newlabel{eq:salidas}{{29}{4}{Modelo Matemático}{equation.2.29}{}}
+\newlabel{eq:re_transferencia}{{30}{4}{Modelo Matemático}{equation.2.30}{}}
+\newlabel{eq:matriz_transferencia}{{31}{4}{Modelo Matemático}{equation.2.31}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Controlador}{4}{section.3}\protected@file@percent }
+\newlabel{eq:error}{{32}{4}{Controlador}{equation.3.32}{}}
+\newlabel{eq:PID}{{33}{4}{Controlador}{equation.3.33}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Resultados}{5}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Análisis en el dominio del tiempo}{5}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.1}Respuesta al Escalón de Posición ($X, Y, Z$)}{5}{subsubsection.4.1.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Respuesta al escalón de los canales de posición ($X, Y, Z$) con variación de masa. $G$ es el modelo nominal.}}{5}{figure.2}\protected@file@percent }
+\newlabel{fig:step_pos}{{2}{5}{Respuesta al escalón de los canales de posición ($X, Y, Z$) con variación de masa. $G$ es el modelo nominal}{figure.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.2}Respuesta al Escalón de Actitud ($\phi , \theta , \psi $)}{5}{subsubsection.4.1.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Respuesta al escalón de los canales de actitud ($\phi , \theta , \psi $).}}{5}{figure.3}\protected@file@percent }
+\newlabel{fig:step_att}{{3}{5}{Respuesta al escalón de los canales de actitud ($\phi , \theta , \psi $)}{figure.3}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.3}Efecto de la Variación de Parámetros}{5}{subsubsection.4.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.4}Respuesta al Impulso de Posición (Perturbación)}{5}{subsubsection.4.1.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Respuesta al impulso de los canales de posición ($X, Y, Z$). Se confirma la divergencia continua tras una perturbación.}}{5}{figure.4}\protected@file@percent }
+\newlabel{fig:impulse_pos}{{4}{5}{Respuesta al impulso de los canales de posición ($X, Y, Z$). Se confirma la divergencia continua tras una perturbación}{figure.4}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.5}Respuesta al Impulso de Actitud (Perturbación)}{5}{subsubsection.4.1.5}\protected@file@percent }
+\citation{bechhoefer2021control}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Respuesta al impulso de los canales de actitud ($\phi , \theta , \psi $). El crecimiento lineal indica una velocidad angular constante $\dot  {\omega }_i \neq  0$.}}{6}{figure.5}\protected@file@percent }
+\newlabel{fig:impulse_att}{{5}{6}{Respuesta al impulso de los canales de actitud ($\phi , \theta , \psi $). El crecimiento lineal indica una velocidad angular constante $\dot {\omega }_i \neq 0$}{figure.5}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.6}Efecto en la Ubicación de Polos y Ceros}{6}{subsubsection.4.1.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Ubicación de Polos en Ejes Inestables:}{6}{section*.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Efecto de la Variación de Parámetros (Robustez):}{6}{section*.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Ubicación de los polos dominantes en el plano $s$ para las variaciones de masa $G, G_{50m}, G_{50M}$.}}{6}{figure.6}\protected@file@percent }
+\newlabel{fig:polos}{{6}{6}{Ubicación de los polos dominantes en el plano $s$ para las variaciones de masa $G, G_{50m}, G_{50M}$}{figure.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Análisis en el dominio de la frecuencia}{6}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.1}Frecuencias de Resonancia}{6}{subsubsection.4.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.2}Diagramas de Bode de Posición ($X/N_y$, $Y/N_x$, $Z/T$)}{6}{subsubsection.4.2.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Diagramas de Bode para los canales de posición ($X/N_y$, $Y/N_x$, $Z/T$). }}{6}{figure.7}\protected@file@percent }
+\newlabel{fig:bode_pos}{{7}{6}{Diagramas de Bode para los canales de posición ($X/N_y$, $Y/N_x$, $Z/T$)}{figure.7}{}}
+\citation{aastrom2021feedback}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.3}Diagramas de Bode de Orientación ($\phi /N_x$, $\theta /N_y$, $\psi /N_z$)}{7}{subsubsection.4.2.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Diagramas de Bode para los canales de actitud ($\phi /N_x$, $\theta /N_y$, $\psi /N_z$). }}{7}{figure.8}\protected@file@percent }
+\newlabel{fig:bode_att}{{8}{7}{Diagramas de Bode para los canales de actitud ($\phi /N_x$, $\theta /N_y$, $\psi /N_z$)}{figure.8}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.4}Criterio de Estabilidad de Nyquist}{7}{subsubsection.4.2.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Diagramas de Nyquist para los canales de posición.}}{7}{figure.9}\protected@file@percent }
+\newlabel{fig:nyquist_pos}{{9}{7}{Diagramas de Nyquist para los canales de posición}{figure.9}{}}
+\@writefile{toc}{\contentsline {paragraph}{Diagramas de Nyquist de Posición ($X/N_y$, $Y/N_x$, $Z/T$):}{7}{section*.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Diagramas de Nyquist de Orientación ($\phi /N_x$, $\theta /N_y$, $\psi /N_z$):}{7}{section*.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Diagramas de Nyquist para los canales de actitud}}{7}{figure.10}\protected@file@percent }
+\newlabel{fig:nyquist_att}{{10}{7}{Diagramas de Nyquist para los canales de actitud}{figure.10}{}}
+\@writefile{toc}{\contentsline {paragraph}{Conclusión del Criterio:}{7}{section*.5}\protected@file@percent }
+\citation{ejosat2019,luukkonen2011modelling}
+\citation{alkamachi2017modelling,abdulkareem2022modeling}
+\citation{ejosat2019,luukkonen2011modelling}
+\citation{niseControl}
+\citation{niseControl}
+\citation{luukkonen2011modelling}
+\citation{kose2019dynamic}
+\citation{alkamachi2017modelling}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.5}Márgenes de Ganancia y de Fase}{8}{subsubsection.4.2.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Controlador PID de trayectoria basado en simulaciones}{8}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Simulaciones en MATLAB/Simulink: modelo lineal 1D}{8}{subsection.5.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces Respuesta del sistema en Simulink con controlador PID.}}{8}{figure.11}\protected@file@percent }
+\newlabel{fig:simulink_resp}{{11}{8}{Respuesta del sistema en Simulink con controlador PID}{figure.11}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {12}{\ignorespaces Diagrama de bloques del controlador PID en Simulink.}}{8}{figure.12}\protected@file@percent }
+\newlabel{fig:simulink_bloques}{{12}{8}{Diagrama de bloques del controlador PID en Simulink}{figure.12}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Simulaciones en Python: modelo lineal completo}{8}{subsection.5.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Valores numéricos del modelo dinámico del dron.}}{9}{table.1}\protected@file@percent }
+\newlabel{tab:parametros_fisicos}{{1}{9}{Valores numéricos del modelo dinámico del dron}{table.1}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Ganancias y límites de los controladores PID/PD del dron.}}{9}{table.2}\protected@file@percent }
+\newlabel{tab:pid}{{2}{9}{Ganancias y límites de los controladores PID/PD del dron}{table.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.1}Resultados para la trayectoria helicoidal (espiral)}{9}{subsubsection.5.2.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {13}{\ignorespaces Errores de posición para la trayectoria espiral.}}{9}{figure.13}\protected@file@percent }
+\newlabel{fig:errores_spiral}{{13}{9}{Errores de posición para la trayectoria espiral}{figure.13}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {14}{\ignorespaces Entradas de control para la espiral.}}{9}{figure.14}\protected@file@percent }
+\newlabel{fig:inputs_spiral}{{14}{9}{Entradas de control para la espiral}{figure.14}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {15}{\ignorespaces Trayectoria en el plano XY para la espiral.}}{9}{figure.15}\protected@file@percent }
+\newlabel{fig:tray_xy_spiral}{{15}{9}{Trayectoria en el plano XY para la espiral}{figure.15}{}}
+\citation{alkamachi2017modelling}
+\@writefile{lof}{\contentsline {figure}{\numberline {16}{\ignorespaces Trayectoria 3D para la espiral.}}{10}{figure.16}\protected@file@percent }
+\newlabel{fig:tray3D_spiral}{{16}{10}{Trayectoria 3D para la espiral}{figure.16}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {17}{\ignorespaces Ángulos de actitud durante la espiral.}}{10}{figure.17}\protected@file@percent }
+\newlabel{fig:angulos_spiral}{{17}{10}{Ángulos de actitud durante la espiral}{figure.17}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.2.2}Resultados para la trayectoria circular}{10}{subsubsection.5.2.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {18}{\ignorespaces Errores de posición para la trayectoria circular.}}{10}{figure.18}\protected@file@percent }
+\newlabel{fig:errores_circle}{{18}{10}{Errores de posición para la trayectoria circular}{figure.18}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {19}{\ignorespaces Entradas de control para la trayectoria circular.}}{10}{figure.19}\protected@file@percent }
+\newlabel{fig:inputs_circle}{{19}{10}{Entradas de control para la trayectoria circular}{figure.19}{}}
+\citation{abdulkareem2022modeling}
+\citation{niseControl}
+\@writefile{lof}{\contentsline {figure}{\numberline {20}{\ignorespaces Trayectoria XY para la trayectoria circular.}}{11}{figure.20}\protected@file@percent }
+\newlabel{fig:tray_xy_circle}{{20}{11}{Trayectoria XY para la trayectoria circular}{figure.20}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {21}{\ignorespaces Trayectoria 3D para la trayectoria circular.}}{11}{figure.21}\protected@file@percent }
+\newlabel{fig:tray3D_circle}{{21}{11}{Trayectoria 3D para la trayectoria circular}{figure.21}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {22}{\ignorespaces Ángulos de actitud para la trayectoria circular.}}{11}{figure.22}\protected@file@percent }
+\newlabel{fig:angulos_circle}{{22}{11}{Ángulos de actitud para la trayectoria circular}{figure.22}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Comparación de ambos enfoques}{11}{subsection.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusiones}{11}{section.6}\protected@file@percent }
+\bibstyle{elsarticle-num}
+\bibdata{library.bib}
+\bibcite{patrick2020effective}{{1}{}{{}}{{}}}
+\bibcite{luukkonen2011modelling}{{2}{}{{}}{{}}}
+\bibcite{alkamachi2017modelling}{{3}{}{{}}{{}}}
+\bibcite{cengiz2024quadcopter}{{4}{}{{}}{{}}}
+\bibcite{abdulkareem2022modeling}{{5}{}{{}}{{}}}
+\bibcite{bechhoefer2021control}{{6}{}{{}}{{}}}
+\bibcite{aastrom2021feedback}{{7}{}{{}}{{}}}
+\bibcite{ejosat2019}{{8}{}{{}}{{}}}
+\bibcite{niseControl}{{9}{}{{}}{{}}}
+\bibcite{kose2019dynamic}{{10}{}{{}}{{}}}
 \providecommand\NAT@force@numbers{}\NAT@force@numbers
-\newlabel{eq:matriz_A}{{21}{3}{}{}{}}
-\newlabel{eq:matriz_B}{{22}{3}{}{}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {III}Controlador}{3}{}\protected@file@percent }
-\newlabel{sec:control}{{III}{3}{}{}{}}
-\newlabel{eq:matriz_transferencia}{{24}{3}{}{}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {IV}Resultados}{3}{}\protected@file@percent }
-\newlabel{sec:resultados}{{IV}{3}{}{}{}}
-\gdef \@abspage@last{3}
+\@writefile{toc}{\contentsline {section}{\numberline {7}Futuro del proyecto}{12}{section.7}\protected@file@percent }
+\gdef \@abspage@last{12}

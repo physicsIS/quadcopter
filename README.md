@@ -41,9 +41,15 @@
 
 1. Instala dependencias (Python 3.10+ recomendado):
 
+
 ```bash
-pip install numpy sympy control vpython pandas matplotlib scienceplots
+pip install numpy sympy control vpython pandas matplotlib scienceplots jupyterlab
 ```
+
+```bash
+conda install -c conda-forge numpy sympy pandas matplotlib control vpython scienceplots jupyterlab
+
+
 2. Ejecutar la simulación 3D:
 ```bash
 python simulacion_traj.py drone_simulation_results_circle.csv
@@ -98,7 +104,12 @@ Hello! 👋 This project is about **simulating and controlling a quadcopter** us
 1. Install dependencies (Python 3.10+ recommended):
 
 ```bash
-pip install numpy sympy control vpython pandas matplotlib scienceplots
+pip install numpy sympy control vpython pandas matplotlib scienceplots jupyterlab
+```
+
+```bash
+conda install -c conda-forge numpy sympy pandas matplotlib control vpython scienceplots jupyterlab
+
 ```
 
 2. Run 3D simulation:
