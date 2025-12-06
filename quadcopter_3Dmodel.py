@@ -98,7 +98,7 @@ class Quadcopter:
 		# Compound: agrupa todas las partes en un solo objeto visual
 		# -----------------
 		self._parts = parts  # guardamos la lista por si hace falta
-		self.compound = compound(parts, pos=vector(0,0,0))
+		self.compound = compound(parts, pos=vector(0,0,0), origin = vector(0,0,0))
 
 		# Guardar referencias a hélices (estos objetos siguen existiendo aunque formen parte del compound)
 		self.props = props
